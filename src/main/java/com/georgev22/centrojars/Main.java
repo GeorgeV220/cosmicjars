@@ -118,6 +118,7 @@ public class Main {
             LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
 
             System.out.println("Properties file not found. Please provide the following details:");
+            System.out.println("Check https://centrojars.com/ for more details.");
             String serverType = lineReader.readLine("Server Type (e.g., servers): ");
             String serverCategory = lineReader.readLine("Server Category (e.g., spigot): ");
             String version = lineReader.readLine("Version (e.g., latest): ");
