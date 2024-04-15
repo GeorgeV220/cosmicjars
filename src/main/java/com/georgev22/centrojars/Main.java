@@ -2,6 +2,8 @@ package com.georgev22.centrojars;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
@@ -147,7 +149,7 @@ public class Main {
      *
      * @return Properties containing server details.
      */
-    private Properties promptUserForServerDetails() {
+    private @NotNull Properties promptUserForServerDetails() {
         Properties properties = new Properties();
         try {
             Terminal terminal = TerminalBuilder.builder().system(true).build();
@@ -172,7 +174,7 @@ public class Main {
      *
      * @param properties Properties to be saved.
      */
-    private void saveProperties(Properties properties) {
+    private void saveProperties(@NotNull Properties properties) {
         try {
             properties.store(new FileOutputStream(PROPERTIES_FILE), null);
         } catch (IOException e) {
@@ -185,10 +187,11 @@ public class Main {
      *
      * @param type     Server type.
      * @param category Server category.
+     * @param version  Server version.
      * @return Absolute path of the downloaded JAR file, or null if download failed.
      * @param* @param version Server version.
      */
-    private String downloadJar(String type, String category, String version) {
+    private @Nullable String downloadJar(String type, String category, String version) {
         String apiUrl = API_BASE_URL + "fetchJar/" + type + "/" + category + "/" + version + ".jar";
         try {
             URL url = new URL(apiUrl);
@@ -200,7 +203,9 @@ public class Main {
 
                 String filePath = CENTRO_JARS_FOLDER + type + "/" + version + "/";
                 File outputFile = new File(filePath + fileName);
-                outputFile.getParentFile().mkdirs();
+                if (outputFile.getParentFile().mkdirs()) {
+                    logger.info("Created directory: {}", filePath);
+                }
 
                 int contentLength = connection.getContentLength();
 
@@ -250,7 +255,7 @@ public class Main {
      * @param progress Progress percentage.
      * @return Progress bar string.
      */
-    private String getProgressBar(int progress) {
+    private @NotNull String getProgressBar(int progress) {
         StringBuilder progressBar = new StringBuilder("[");
         int numChars = progress / 2;
         for (int i = 0; i < 50; i++) {
