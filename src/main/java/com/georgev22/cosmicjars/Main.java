@@ -211,9 +211,12 @@ public class Main {
             LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
 
             logger.info("Properties file not found. Please provide the following details:");
-            String serverType = lineReader.readLine("Server Type (e.g., servers): ");
-            String serverImplementation = lineReader.readLine("Server Implementation (e.g., spigot): ");
-            String version = lineReader.readLine("Version (e.g., latest): ");
+            logger.info("Server Type (e.g., servers): ");
+            String serverType = lineReader.readLine();
+            logger.info("Server Implementation (e.g., spigot): ");
+            String serverImplementation = lineReader.readLine();
+            logger.info("Server Version (e.g., latest): ");
+            String version = lineReader.readLine();
             properties.setProperty("server.type", serverType);
             properties.setProperty("server.implementation", serverImplementation);
             properties.setProperty("server.version", version);
