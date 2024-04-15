@@ -11,10 +11,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Main class for CentroJars application.
@@ -68,9 +65,48 @@ public class Main {
             saveProperties(properties);
         }
 
+        List<String> centroArgs = Arrays.stream(args).filter(arg -> arg.startsWith("--centro")).toList();
+
+        Optional<String> centroServerTypeArg = centroArgs.stream()
+                .filter(arg -> arg.startsWith("--centroServerType="))
+                .findFirst();
+
+        Optional<String> centroServerCategoryArg = centroArgs.stream()
+                .filter(arg -> arg.startsWith("--centroServerCategory="))
+                .findFirst();
+
+        Optional<String> centroServerVersionArg = centroArgs.stream()
+                .filter(arg -> arg.startsWith("--centroServerVersion="))
+                .findFirst();
+
+
         String serverType = properties.getProperty("server.type");
         String serverCategory = properties.getProperty("server.category");
         String version = properties.getProperty("server.version");
+
+        if (centroServerTypeArg.isPresent()) {
+            serverType = centroServerTypeArg.get().split("=")[1];
+            logger.info("Overriding server type with: {}", serverType);
+        }
+
+        if (centroServerCategoryArg.isPresent()) {
+            serverCategory = centroServerCategoryArg.get().split("=")[1];
+            logger.info("Overriding server category with: {}", serverCategory);
+        }
+
+        if (centroServerVersionArg.isPresent()) {
+            version = centroServerVersionArg.get().split("=")[1];
+            logger.info("Overriding server version with: {}", version);
+        }
+
+        if (serverType == null || serverCategory == null || version == null) {
+            logger.error("Failed to get server details.");
+            return;
+        }
+
+        logger.info("Server type: {}", serverType);
+        logger.info("Server category: {}", serverCategory);
+        logger.info("Server version: {}", version);
 
         String fileName = downloadJar(serverType, serverCategory, version);
         if (fileName != null) {
@@ -247,7 +283,7 @@ public class Main {
             command.addAll(vmArguments);
             command.add("-jar");
             command.add(jarFile);
-            command.addAll(Arrays.asList(args));
+            command.addAll(Arrays.stream(args).filter(arg -> !arg.startsWith("--centro")).toList());
 
             logger.info("Starting Minecraft server with command: {}", String.join(" ", command));
 
