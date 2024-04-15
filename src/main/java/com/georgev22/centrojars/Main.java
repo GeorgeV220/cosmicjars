@@ -200,7 +200,7 @@ public class Main {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 String fileName = apiUrl.substring(apiUrl.lastIndexOf('/') + 1);
 
-                String filePath = CENTRO_JARS_FOLDER + type + "/" + version + "/";
+                String filePath = CENTRO_JARS_FOLDER + type + "/" + category + "/" + version + "/";
                 File outputFile = new File(filePath + fileName);
                 if (outputFile.getParentFile().mkdirs()) {
                     logger.info("Created directory: {}", filePath);
