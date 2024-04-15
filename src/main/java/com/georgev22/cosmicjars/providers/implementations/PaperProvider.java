@@ -5,10 +5,12 @@ import com.georgev22.cosmicjars.providers.info.PaperInfo;
 import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Properties;
 
 /**
  * Implementation of Provider for downloading server jars from PaperMC.
@@ -53,6 +55,18 @@ public class PaperProvider extends Provider {
                 String fileName = this.getServerVersion() + ".jar";
 
                 String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                Properties properties = this.main.getProperties();
+                String localPurpurBuild = properties.getProperty("localBuild." + this.getServerImplementation(), "0");
+                if (!localPurpurBuild.equals(String.valueOf(paperInfo.getLatestBuild()))) {
+                    properties.setProperty("localBuild." + this.getServerImplementation(), String.valueOf(paperInfo.getLatestBuild()));
+                    this.main.saveProperties(properties);
+                } else {
+                    File file = new File(filePath + fileName);
+                    if (file.exists()) {
+                        this.main.getLogger().info("Skipping download of {} jar. File with build number {} already exists: {}", this.getServerImplementation(), String.valueOf(paperInfo.getLatestBuild()), filePath + fileName);
+                        return filePath + fileName;
+                    }
+                }
                 return Utils.downloadFile(apiUrl, filePath, fileName);
             } else {
                 this.main.getLogger().error("Failed to fetch Paper link. Response code: {} reason: {}", paperConnectionResponseCode, paperConnection.getResponseMessage());
