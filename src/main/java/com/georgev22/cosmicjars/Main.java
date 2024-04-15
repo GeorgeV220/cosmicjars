@@ -213,10 +213,13 @@ public class Main {
             logger.info("Properties file not found. Please provide the following details:");
             logger.info("Server Type (e.g., servers): ");
             String serverType = lineReader.readLine();
+            logger.info("Selected Server Type: {}", serverType);
             logger.info("Server Implementation (e.g., spigot): ");
             String serverImplementation = lineReader.readLine();
+            logger.info("Selected Server Implementation: {}", serverImplementation);
             logger.info("Server Version (e.g., latest): ");
             String version = lineReader.readLine();
+            logger.info("Selected Server Version: {}", version);
             properties.setProperty("server.type", serverType);
             properties.setProperty("server.implementation", serverImplementation);
             properties.setProperty("server.version", version);
