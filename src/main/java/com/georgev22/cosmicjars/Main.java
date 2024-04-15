@@ -304,14 +304,26 @@ public class Main {
             logger.info("Starting Minecraft server with command: {}", String.join(" ", command));
 
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-            Process pr = pb.start();
 
-            int exitCode = pr.waitFor();
-            logger.info("Minecraft server exited with code: {}", exitCode);
-        } catch (IOException | InterruptedException e) {
+            Process process = pb
+                    .inheritIO()
+                    .start();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(process::destroy));
+
+            while (process.isAlive()) {
+                try {
+                    int exitCode = process.waitFor();
+
+                    if (exitCode != 0) {
+                        logger.info("Minecraft server exited with code: {}", exitCode);
+                    }
+
+                    break;
+                } catch (InterruptedException ignored) {
+                }
+            }
+        } catch (IOException e) {
             logger.error("Error starting Minecraft server: {}", e.getMessage());
         }
     }
