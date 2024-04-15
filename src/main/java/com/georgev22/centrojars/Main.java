@@ -1,5 +1,10 @@
 package com.georgev22.centrojars;
 
+import com.georgev22.centrojars.providers.*;
+import com.georgev22.centrojars.providers.implementations.CentroJarProvider;
+import com.georgev22.centrojars.providers.implementations.MohistProvider;
+import com.georgev22.centrojars.providers.implementations.PaperProvider;
+import com.georgev22.centrojars.providers.implementations.PurpurProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -11,8 +16,6 @@ import org.jline.terminal.TerminalBuilder;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -20,10 +23,20 @@ import java.util.*;
  */
 public class Main {
 
-    private final String API_BASE_URL = "https://centrojars.com/api/";
     private final String PROPERTIES_FILE = "centrojars.properties";
     private final String CENTRO_JARS_FOLDER = "./centroJars/";
     private final Logger logger = LogManager.getLogger("CentroJars");
+
+    private static Main instance;
+
+    /**
+     * Gets the singleton instance of the CentersJars application.
+     *
+     * @return The singleton instance of the CentersJars application.
+     */
+    public static Main getInstance() {
+        return instance;
+    }
 
     /**
      * Main method to start the CentroJars application.
@@ -31,7 +44,8 @@ public class Main {
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        new Main().start(args);
+        instance = new Main();
+        instance.start(args);
     }
 
     /**
@@ -73,8 +87,8 @@ public class Main {
                 .filter(arg -> arg.startsWith("--centroServerType="))
                 .findFirst();
 
-        Optional<String> centroServerCategoryArg = centroArgs.stream()
-                .filter(arg -> arg.startsWith("--centroServerCategory="))
+        Optional<String> centroServerImplementationArg = centroArgs.stream()
+                .filter(arg -> arg.startsWith("--centroServerImplementation="))
                 .findFirst();
 
         Optional<String> centroServerVersionArg = centroArgs.stream()
@@ -83,7 +97,7 @@ public class Main {
 
 
         String serverType = properties.getProperty("server.type");
-        String serverCategory = properties.getProperty("server.category");
+        String serverImplementation = properties.getProperty("server.implementation");
         String version = properties.getProperty("server.version");
 
         if (centroServerTypeArg.isPresent()) {
@@ -91,9 +105,9 @@ public class Main {
             logger.info("Overriding server type with: {}", serverType);
         }
 
-        if (centroServerCategoryArg.isPresent()) {
-            serverCategory = centroServerCategoryArg.get().split("=")[1];
-            logger.info("Overriding server category with: {}", serverCategory);
+        if (centroServerImplementationArg.isPresent()) {
+            serverImplementation = centroServerImplementationArg.get().split("=")[1];
+            logger.info("Overriding server implementation with: {}", serverImplementation);
         }
 
         if (centroServerVersionArg.isPresent()) {
@@ -101,21 +115,48 @@ public class Main {
             logger.info("Overriding server version with: {}", version);
         }
 
-        if (serverType == null || serverCategory == null || version == null) {
+        if (serverType == null || serverImplementation == null || version == null) {
             logger.error("Failed to get server details.");
             return;
         }
 
         logger.info("Server type: {}", serverType);
-        logger.info("Server category: {}", serverCategory);
+        logger.info("Server implementation: {}", serverImplementation);
         logger.info("Server version: {}", version);
 
-        String fileName = downloadJar(serverType, serverCategory, version);
+        String fileName = downloadJar(serverType, serverImplementation, version);
         if (fileName != null) {
             startMinecraftServer(fileName, args);
         } else {
             logger.error("Failed to download jar.");
         }
+    }
+
+    /**
+     * Returns the logger for the application.
+     *
+     * @return Logger for the application.
+     */
+    public Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * Returns the path to the CentroJars folder.
+     *
+     * @return Path to the CentroJars folder.
+     */
+    public String getCentroJarsFolder() {
+        return CENTRO_JARS_FOLDER;
+    }
+
+    /**
+     * Returns the path to the properties file.
+     *
+     * @return Path to the properties file.
+     */
+    public String getPropertiesFile() {
+        return PROPERTIES_FILE;
     }
 
     /**
@@ -158,10 +199,10 @@ public class Main {
             System.out.println("Properties file not found. Please provide the following details:");
             System.out.println("Check https://centrojars.com/ for more details.");
             String serverType = lineReader.readLine("Server Type (e.g., servers): ");
-            String serverCategory = lineReader.readLine("Server Category (e.g., spigot): ");
+            String serverImplementation = lineReader.readLine("Server Implementation (e.g., spigot): ");
             String version = lineReader.readLine("Version (e.g., latest): ");
             properties.setProperty("server.type", serverType);
-            properties.setProperty("server.category", serverCategory);
+            properties.setProperty("server.implementation", serverImplementation);
             properties.setProperty("server.version", version);
         } catch (IOException e) {
             logger.error("Error prompting user for server details: {}", e.getMessage());
@@ -185,91 +226,23 @@ public class Main {
     /**
      * Downloads the JAR file from the CentroJars API.
      *
-     * @param type     Server type.
-     * @param category Server category.
-     * @param version  Server version.
+     * @param type           Server type.
+     * @param implementation Server implementation.
+     * @param version        Server version.
      * @return Absolute path of the downloaded JAR file, or null if download failed.
      */
-    private @Nullable String downloadJar(String type, String category, String version) {
-        String apiUrl = API_BASE_URL + "fetchJar/" + type + "/" + category + "/" + version + ".jar";
-        try {
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                String fileName = apiUrl.substring(apiUrl.lastIndexOf('/') + 1);
-
-                String filePath = CENTRO_JARS_FOLDER + type + "/" + category + "/" + version + "/";
-                File outputFile = new File(filePath + fileName);
-                if (outputFile.getParentFile().mkdirs()) {
-                    logger.info("Created directory: {}", filePath);
-                }
-
-                int contentLength = connection.getContentLength();
-
-                try (InputStream inputStream = connection.getInputStream();
-                     FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    int totalBytesRead = 0;
-                    long startTime = System.nanoTime();
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                        totalBytesRead += bytesRead;
-
-                        long currentTime = System.nanoTime();
-                        long elapsedTime = currentTime - startTime;
-                        double speed = totalBytesRead / (elapsedTime / 1e9);
-
-                        double remainingBytes = contentLength - totalBytesRead;
-                        double timeLeft = remainingBytes / speed;
-
-                        int progress = (int) (totalBytesRead * 100.0 / contentLength);
-                        String progressBar = getProgressBar(progress);
-
-                        System.out.printf("\rDownloading... %s  Speed: %.2f KB/s  Time left: %.2f seconds",
-                                progressBar, speed / 1024, timeLeft);
-                        System.out.flush();
-                    }
-
-                    System.out.println();
-                }
-
-                logger.info("Jar downloaded successfully: {}", outputFile.getAbsolutePath());
-                return outputFile.getAbsolutePath();
-            } else {
-                logger.error("Failed to fetch jar. Response code: {} reason: {}", responseCode, connection.getResponseMessage());
-                logger.error("API URL: {}", apiUrl);
-            }
-        } catch (IOException e) {
-            logger.error("Error fetching jar: {}", e.getMessage());
+    private @Nullable String downloadJar(String type, @NotNull String implementation, String version) {
+        Provider provider;
+        if (implementation.equalsIgnoreCase("purpur")) {
+            provider = new PurpurProvider(type, implementation, version);
+        } else if (implementation.equalsIgnoreCase("paper") || implementation.equalsIgnoreCase("folia")) {
+            provider = new PaperProvider(type, implementation, version);
+        } else if (implementation.equalsIgnoreCase("mohist") || implementation.equalsIgnoreCase("banner")) {
+            provider = new MohistProvider(type, implementation, version);
+        } else {
+            provider = new CentroJarProvider(type, implementation, version);
         }
-        return null;
-    }
-
-    /**
-     * Generates a progress bar string based on the given progress percentage.
-     *
-     * @param progress Progress percentage.
-     * @return Progress bar string.
-     */
-    private @NotNull String getProgressBar(int progress) {
-        StringBuilder progressBar = new StringBuilder("[");
-        int numChars = progress / 2;
-        for (int i = 0; i < 50; i++) {
-            if (i < numChars) {
-                progressBar.append("=");
-            } else if (i == numChars) {
-                progressBar.append(">");
-            } else {
-                progressBar.append(" ");
-            }
-        }
-        progressBar.append("] ");
-        progressBar.append(progress);
-        progressBar.append("%");
-        return progressBar.toString();
+        return provider.downloadJar();
     }
 
     /**
