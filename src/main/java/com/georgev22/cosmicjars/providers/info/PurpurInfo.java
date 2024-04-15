@@ -1,4 +1,4 @@
-package com.georgev22.centrojars.providers.info;
+package com.georgev22.cosmicjars.providers.info;
 
 import java.util.List;
 import java.util.Objects;

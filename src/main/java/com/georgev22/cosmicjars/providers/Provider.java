@@ -1,6 +1,6 @@
-package com.georgev22.centrojars.providers;
+package com.georgev22.cosmicjars.providers;
 
-import com.georgev22.centrojars.Main;
+import com.georgev22.cosmicjars.Main;
 
 /**
  * Abstract class representing a provider for downloading server jars.

@@ -1,8 +1,8 @@
-package com.georgev22.centrojars.providers.implementations;
+package com.georgev22.cosmicjars.providers.implementations;
 
-import com.georgev22.centrojars.providers.Provider;
-import com.georgev22.centrojars.providers.info.MohistInfo;
-import com.georgev22.centrojars.utilities.Utils;
+import com.georgev22.cosmicjars.providers.Provider;
+import com.georgev22.cosmicjars.providers.info.MohistInfo;
+import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class MohistProvider extends Provider {
                 MohistInfo mohistInfo = gson.fromJson(new InputStreamReader(connection.getInputStream()), MohistInfo.class);
                 String apiUrl = mohistInfo.getLatestBuild().getUrl();
                 String fileName = this.getServerVersion() + ".jar";
-                String filePath = this.main.getCentroJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
                 return Utils.downloadFile(apiUrl, filePath, fileName);
             } else {
                 this.main.getLogger().error("Failed to fetch Mohist link. Response code: {} reason: {}", connectionResponseCode, connection.getResponseMessage());

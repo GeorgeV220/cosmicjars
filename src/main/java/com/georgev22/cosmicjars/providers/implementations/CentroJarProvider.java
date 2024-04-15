@@ -1,7 +1,7 @@
-package com.georgev22.centrojars.providers.implementations;
+package com.georgev22.cosmicjars.providers.implementations;
 
-import com.georgev22.centrojars.providers.Provider;
-import com.georgev22.centrojars.utilities.Utils;
+import com.georgev22.cosmicjars.providers.Provider;
+import com.georgev22.cosmicjars.utilities.Utils;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -45,7 +45,7 @@ public class CentroJarProvider extends Provider {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 String fileName = apiUrl.substring(apiUrl.lastIndexOf('/') + 1);
 
-                String filePath = this.main.getCentroJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
 
                 return Utils.downloadFile(apiUrl, filePath, fileName);
             } else {

@@ -1,8 +1,7 @@
-package com.georgev22.centrojars.providers.info;
+package com.georgev22.cosmicjars.providers.info;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents information about the Mohist project and its builds.

@@ -1,6 +1,6 @@
-package com.georgev22.centrojars.utilities;
+package com.georgev22.cosmicjars.utilities;
 
-import com.georgev22.centrojars.Main;
+import com.georgev22.cosmicjars.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

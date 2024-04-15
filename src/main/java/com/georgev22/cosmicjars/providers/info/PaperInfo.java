@@ -1,4 +1,4 @@
-package com.georgev22.centrojars.providers.info;
+package com.georgev22.cosmicjars.providers.info;
 
 /**
  * Class representing information about a PaperMC project version.

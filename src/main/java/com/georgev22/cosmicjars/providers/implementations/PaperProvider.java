@@ -1,8 +1,8 @@
-package com.georgev22.centrojars.providers.implementations;
+package com.georgev22.cosmicjars.providers.implementations;
 
-import com.georgev22.centrojars.providers.Provider;
-import com.georgev22.centrojars.providers.info.PaperInfo;
-import com.georgev22.centrojars.utilities.Utils;
+import com.georgev22.cosmicjars.providers.Provider;
+import com.georgev22.cosmicjars.providers.info.PaperInfo;
+import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class PaperProvider extends Provider {
                 String apiUrl = paperAPI + "builds/" + latest + "/downloads/" + this.getServerImplementation() + "-" + this.getServerVersion() + "-" + latest + ".jar";
                 String fileName = this.getServerVersion() + ".jar";
 
-                String filePath = this.main.getCentroJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
                 return Utils.downloadFile(apiUrl, filePath, fileName);
             } else {
                 this.main.getLogger().error("Failed to fetch Paper link. Response code: {} reason: {}", paperConnectionResponseCode, paperConnection.getResponseMessage());

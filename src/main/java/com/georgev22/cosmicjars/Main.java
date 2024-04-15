@@ -1,10 +1,10 @@
-package com.georgev22.centrojars;
+package com.georgev22.cosmicjars;
 
-import com.georgev22.centrojars.providers.*;
-import com.georgev22.centrojars.providers.implementations.CentroJarProvider;
-import com.georgev22.centrojars.providers.implementations.MohistProvider;
-import com.georgev22.centrojars.providers.implementations.PaperProvider;
-import com.georgev22.centrojars.providers.implementations.PurpurProvider;
+import com.georgev22.cosmicjars.providers.*;
+import com.georgev22.cosmicjars.providers.implementations.CentroJarProvider;
+import com.georgev22.cosmicjars.providers.implementations.MohistProvider;
+import com.georgev22.cosmicjars.providers.implementations.PaperProvider;
+import com.georgev22.cosmicjars.providers.implementations.PurpurProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -19,13 +19,13 @@ import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
- * Main class for CentroJars application.
+ * Main class for CosmicJars application.
  */
 public class Main {
 
-    private final String PROPERTIES_FILE = "centrojars.properties";
-    private final String CENTRO_JARS_FOLDER = "./centroJars/";
-    private final Logger logger = LogManager.getLogger("CentroJars");
+    private final String PROPERTIES_FILE = "cosmicjars.properties";
+    private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
+    private final Logger logger = LogManager.getLogger("CosmicJars");
 
     private static Main instance;
 
@@ -39,7 +39,7 @@ public class Main {
     }
 
     /**
-     * Main method to start the CentroJars application.
+     * Main method to start the CosmicJars application.
      *
      * @param args Command line arguments.
      */
@@ -49,31 +49,31 @@ public class Main {
     }
 
     /**
-     * Starts the CentroJars application.
+     * Starts the CosmicJars application.
      */
     public void start(String[] args) {
         configureLogging();
-        logger.info("CentroJars starting...");
+        logger.info("CosmicJars starting...");
         logger.info("""
-                                                                                                                                          \s
-                                                                                              ,---._                                      \s
-                  ,----..                               ___                                 .-- -.' \\                                     \s
-                 /   /   \\                            ,--.'|_                               |    |   :                                    \s
-                |   :     :                  ,---,    |  | :,'    __  ,-.    ,---.          :    ;   |                __  ,-.             \s
-                .   |  ;. /              ,-+-. /  |   :  : ' :  ,' ,'/ /|   '   ,'\\         :        |              ,' ,'/ /|   .--.--.   \s
-                .   ; /--`     ,---.    ,--.'|'   | .;__,'  /   '  | |' |  /   /   |        |    :   :   ,--.--.    '  | |' |  /  /    '  \s
-                ;   | ;       /     \\  |   |  ,"' | |  |   |    |  |   ,' .   ; ,. :        :           /       \\   |  |   ,' |  :  /`./  \s
-                |   : |      /    /  | |   | /  | | :__,'| :    '  :  /   '   | |: :        |    ;   | .--.  .-. |  '  :  /   |  :  ;_    \s
-                .   | '___  .    ' / | |   | |  | |   '  : |__  |  | '    '   | .; :    ___ l           \\__\\/: . .  |  | '     \\  \\    `. \s
-                '   ; : .'| '   ;   /| |   | |  |/    |  | '.'| ;  : |    |   :    |  /    /\\    J   :  ," .--.; |  ;  : |      `----.   \\\s
-                '   | '/  : '   |  / | |   | |--'     ;  :    ; |  , ;     \\   \\  /  /  ../  `..-    , /  /  ,.  |  |  , ;     /  /`--'  /\s
-                |   :    /  |   :    | |   |/         |  ,   /   ---'       `----'   \\    \\         ; ;  :   .'   \\  ---'     '--'.     / \s
-                 \\   \\ .'    \\   \\  /  '---'           ---`-'                         \\    \\      ,'  |  ,     .-./             `--'---'  \s
-                  `---`       `----'                                                   "---....--'     `--`---'                           \s
-                                                                                                                                          \s
+
+                                                                                                                                               \s
+                                                                                                   ,---._                                      \s
+                  ,----..                                     ____                               .-- -.' \\                                     \s
+                 /   /   \\                                  ,'  , `.   ,--,                      |    |   :                                    \s
+                |   :     :    ,---.                     ,-+-,.' _ | ,--.'|                      :    ;   |                __  ,-.             \s
+                .   |  ;. /   '   ,'\\    .--.--.      ,-+-. ;   , || |  |,                       :        |              ,' ,'/ /|   .--.--.   \s
+                .   ; /--`   /   /   |  /  /    '    ,--.'|'   |  || `--'_        ,---.          |    :   :   ,--.--.    '  | |' |  /  /    '  \s
+                ;   | ;     .   ; ,. : |  :  /`./   |   |  ,', |  |, ,' ,'|      /     \\         :           /       \\   |  |   ,' |  :  /`./  \s
+                |   : |     '   | |: : |  :  ;_     |   | /  | |--'  '  | |     /    / '         |    ;   | .--.  .-. |  '  :  /   |  :  ;_    \s
+                .   | '___  '   | .; :  \\  \\    `.  |   : |  | ,     |  | :    .    ' /      ___ l           \\__\\/: . .  |  | '     \\  \\    `. \s
+                '   ; : .'| |   :    |   `----.   \\ |   : |  |/      '  : |__  '   ; :__   /    /\\    J   :  ," .--.; |  ;  : |      `----.   \\\s
+                '   | '/  :  \\   \\  /   /  /`--'  / |   | |`-'       |  | '.'| '   | '.'| /  ../  `..-    , /  /  ,.  |  |  , ;     /  /`--'  /\s
+                |   :    /    `----'   '--'.     /  |   ;/           ;  :    ; |   :    : \\    \\         ; ;  :   .'   \\  ---'     '--'.     / \s
+                 \\   \\ .'                `--'---'   '---'            |  ,   /   \\   \\  /   \\    \\      ,'  |  ,     .-./             `--'---'  \s
+                  `---`                                               ---`-'     `----'     "---....--'     `--`---'                           \s
+                                                                                                                                               \s
                 """);
         logger.info("Made with love by George V. https://github.com/GeorgeV220");
-        logger.info("https://centrojars.com/");
 
         Properties properties = loadProperties();
         if (properties.isEmpty()) {
@@ -81,18 +81,18 @@ public class Main {
             saveProperties(properties);
         }
 
-        List<String> centroArgs = Arrays.stream(args).filter(arg -> arg.startsWith("--centro")).toList();
+        List<String> cosmicArgs = Arrays.stream(args).filter(arg -> arg.startsWith("--cosmic")).toList();
 
-        Optional<String> centroServerTypeArg = centroArgs.stream()
-                .filter(arg -> arg.startsWith("--centroServerType="))
+        Optional<String> cosmicServerTypeArg = cosmicArgs.stream()
+                .filter(arg -> arg.startsWith("--cosmicServerType="))
                 .findFirst();
 
-        Optional<String> centroServerImplementationArg = centroArgs.stream()
-                .filter(arg -> arg.startsWith("--centroServerImplementation="))
+        Optional<String> cosmicServerImplementationArg = cosmicArgs.stream()
+                .filter(arg -> arg.startsWith("--cosmicServerImplementation="))
                 .findFirst();
 
-        Optional<String> centroServerVersionArg = centroArgs.stream()
-                .filter(arg -> arg.startsWith("--centroServerVersion="))
+        Optional<String> cosmicServerVersionArg = cosmicArgs.stream()
+                .filter(arg -> arg.startsWith("--cosmicServerVersion="))
                 .findFirst();
 
 
@@ -100,18 +100,18 @@ public class Main {
         String serverImplementation = properties.getProperty("server.implementation");
         String version = properties.getProperty("server.version");
 
-        if (centroServerTypeArg.isPresent()) {
-            serverType = centroServerTypeArg.get().split("=")[1];
+        if (cosmicServerTypeArg.isPresent()) {
+            serverType = cosmicServerTypeArg.get().split("=")[1];
             logger.info("Overriding server type with: {}", serverType);
         }
 
-        if (centroServerImplementationArg.isPresent()) {
-            serverImplementation = centroServerImplementationArg.get().split("=")[1];
+        if (cosmicServerImplementationArg.isPresent()) {
+            serverImplementation = cosmicServerImplementationArg.get().split("=")[1];
             logger.info("Overriding server implementation with: {}", serverImplementation);
         }
 
-        if (centroServerVersionArg.isPresent()) {
-            version = centroServerVersionArg.get().split("=")[1];
+        if (cosmicServerVersionArg.isPresent()) {
+            version = cosmicServerVersionArg.get().split("=")[1];
             logger.info("Overriding server version with: {}", version);
         }
 
@@ -142,12 +142,12 @@ public class Main {
     }
 
     /**
-     * Returns the path to the CentroJars folder.
+     * Returns the path to the CosmicJars folder.
      *
-     * @return Path to the CentroJars folder.
+     * @return Path to the CosmicJars folder.
      */
-    public String getCentroJarsFolder() {
-        return CENTRO_JARS_FOLDER;
+    public String getCosmicJarsFolder() {
+        return COSMIC_JARS_FOLDER;
     }
 
     /**
@@ -197,7 +197,6 @@ public class Main {
             LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
 
             System.out.println("Properties file not found. Please provide the following details:");
-            System.out.println("Check https://centrojars.com/ for more details.");
             String serverType = lineReader.readLine("Server Type (e.g., servers): ");
             String serverImplementation = lineReader.readLine("Server Implementation (e.g., spigot): ");
             String version = lineReader.readLine("Version (e.g., latest): ");
@@ -224,7 +223,7 @@ public class Main {
     }
 
     /**
-     * Downloads the JAR file from the CentroJars API.
+     * Downloads the JAR file.
      *
      * @param type           Server type.
      * @param implementation Server implementation.
@@ -260,7 +259,7 @@ public class Main {
             command.addAll(vmArguments);
             command.add("-jar");
             command.add(jarFile);
-            command.addAll(Arrays.stream(args).filter(arg -> !arg.startsWith("--centro")).toList());
+            command.addAll(Arrays.stream(args).filter(arg -> !arg.startsWith("--cosmic")).toList());
 
             logger.info("Starting Minecraft server with command: {}", String.join(" ", command));
 
