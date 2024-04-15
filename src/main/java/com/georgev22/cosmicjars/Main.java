@@ -210,7 +210,7 @@ public class Main {
             Terminal terminal = TerminalBuilder.builder().system(true).build();
             LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
 
-            System.out.println("Properties file not found. Please provide the following details:");
+            logger.info("Properties file not found. Please provide the following details:");
             String serverType = lineReader.readLine("Server Type (e.g., servers): ");
             String serverImplementation = lineReader.readLine("Server Implementation (e.g., spigot): ");
             String version = lineReader.readLine("Version (e.g., latest): ");
