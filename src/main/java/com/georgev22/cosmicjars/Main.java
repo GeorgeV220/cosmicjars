@@ -24,6 +24,7 @@ import java.util.*;
 public class Main {
 
     private final String PROPERTIES_FILE = "cosmicjars.properties";
+    private Properties PROPERTIES;
     private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
     private final Logger logger = LogManager.getLogger("CosmicJars");
 
@@ -75,10 +76,10 @@ public class Main {
                 """);
         logger.info("Made with love by George V. https://github.com/GeorgeV220");
 
-        Properties properties = loadProperties();
-        if (properties.isEmpty()) {
-            properties = promptUserForServerDetails();
-            saveProperties(properties);
+        PROPERTIES = loadProperties();
+        if (PROPERTIES.isEmpty()) {
+            PROPERTIES = promptUserForServerDetails();
+            saveProperties(PROPERTIES);
         }
 
         List<String> cosmicArgs = Arrays.stream(args).filter(arg -> arg.startsWith("--cosmic")).toList();
@@ -96,9 +97,9 @@ public class Main {
                 .findFirst();
 
 
-        String serverType = properties.getProperty("server.type");
-        String serverImplementation = properties.getProperty("server.implementation");
-        String version = properties.getProperty("server.version");
+        String serverType = PROPERTIES.getProperty("server.type");
+        String serverImplementation = PROPERTIES.getProperty("server.implementation");
+        String version = PROPERTIES.getProperty("server.version");
 
         if (cosmicServerTypeArg.isPresent()) {
             serverType = cosmicServerTypeArg.get().split("=")[1];
@@ -160,6 +161,15 @@ public class Main {
     }
 
     /**
+     * Returns the properties object.
+     *
+     * @return Properties object.
+     */
+    public Properties getProperties() {
+        return PROPERTIES;
+    }
+
+    /**
      * Configures logging for the application.
      */
     private void configureLogging() {
@@ -172,17 +182,19 @@ public class Main {
      * @return Loaded properties.
      */
     private Properties loadProperties() {
-        Properties properties = new Properties();
-        try {
-            File file = new File(PROPERTIES_FILE);
-            if (!file.exists()) {
-                return properties;
+        if (PROPERTIES == null) {
+            try {
+                PROPERTIES = new Properties();
+                File file = new File(PROPERTIES_FILE);
+                if (!file.exists()) {
+                    return PROPERTIES;
+                }
+                PROPERTIES.load(new FileInputStream(file));
+            } catch (IOException e) {
+                logger.error("Failed to load properties file: {}", e.getMessage());
             }
-            properties.load(new FileInputStream(file));
-        } catch (IOException e) {
-            logger.error("Failed to load properties file: {}", e.getMessage());
         }
-        return properties;
+        return PROPERTIES;
     }
 
     /**
@@ -214,7 +226,7 @@ public class Main {
      *
      * @param properties Properties to be saved.
      */
-    private void saveProperties(@NotNull Properties properties) {
+    public void saveProperties(@NotNull Properties properties) {
         try {
             properties.store(new FileOutputStream(PROPERTIES_FILE), null);
         } catch (IOException e) {
