@@ -189,7 +189,6 @@ public class Main {
      * @param category Server category.
      * @param version  Server version.
      * @return Absolute path of the downloaded JAR file, or null if download failed.
-     * @param* @param version Server version.
      */
     private @Nullable String downloadJar(String type, String category, String version) {
         String apiUrl = API_BASE_URL + "fetchJar/" + type + "/" + category + "/" + version + ".jar";
