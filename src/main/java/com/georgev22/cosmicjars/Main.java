@@ -287,4 +287,27 @@ public class Main {
             logger.error("Error starting Minecraft server: {}", e.getMessage());
         }
     }
+
+    /**
+     * Gets the Java executable path.
+     *
+     * @return The Java executable path.
+     */
+    @NotNull
+    private static String getJavaExecutable() {
+        File binDir = new File(System.getProperty("java.home"), "bin");
+        File javaExe = new File(binDir, "java");
+
+        if (!javaExe.exists()) {
+            javaExe = new File(binDir, "java.exe");
+        }
+
+        if (!javaExe.exists()) {
+            getInstance().getLogger().error("We could not find your java executable inside '{}' - Using command 'java' instead", binDir.getAbsolutePath());
+
+            return "java";
+        }
+
+        return javaExe.getAbsolutePath();
+    }
 }
