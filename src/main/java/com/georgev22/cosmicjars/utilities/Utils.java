@@ -87,4 +87,13 @@ public class Utils {
         return outputFile.getAbsolutePath();
     }
 
+    /**
+     * Checks if the current operating system is Windows.
+     *
+     * @return True if the current operating system is Windows, false otherwise.
+     */
+    public static boolean isWindows() {
+        return (System.getProperty("os") != null ? System.getProperty("os") : "").toLowerCase().contains("windows");
+    }
+
 }
