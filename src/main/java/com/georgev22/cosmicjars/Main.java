@@ -5,6 +5,7 @@ import com.georgev22.cosmicjars.providers.implementations.CentroJarProvider;
 import com.georgev22.cosmicjars.providers.implementations.MohistProvider;
 import com.georgev22.cosmicjars.providers.implementations.PaperProvider;
 import com.georgev22.cosmicjars.providers.implementations.PurpurProvider;
+import com.georgev22.cosmicjars.utilities.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ import java.util.*;
  */
 public class Main {
 
+    private static final File WORKING_DIRECTORY = new File(".");
     private final String PROPERTIES_FILE = "cosmicjars.properties";
     private Properties PROPERTIES;
     private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
@@ -266,11 +268,37 @@ public class Main {
         try {
             List<String> vmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
-            List<String> command = new ArrayList<>();
-            command.add("java");
-            command.addAll(vmArguments);
-            command.add("-jar");
-            command.add(jarFile);
+            LinkedList<String> command = new LinkedList<>();
+
+            if (PROPERTIES.getProperty("server.implementation").equalsIgnoreCase("forge")
+                    || PROPERTIES.getProperty("server.implementation").equalsIgnoreCase("mohist")) {
+                try (FileOutputStream fos = new FileOutputStream(new File(WORKING_DIRECTORY, "user_jvm_args.txt"))) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String arg : vmArguments) {
+                        sb.append(arg).append(" ");
+                    }
+                    fos.write(sb.toString().getBytes());
+                } catch (IOException e) {
+                    logger.error("Failed to write user JVM arguments: {}", e.getMessage());
+                }
+                File forgeRunner = new File(WORKING_DIRECTORY, Utils.isWindows() ? "run.bat" : "run.sh");
+                if (!forgeRunner.exists()) {
+                    logger.error("Could not find forge runner at: {}", forgeRunner.getAbsolutePath());
+                    System.exit(1);
+                }
+
+                if (Utils.isWindows()) {
+                    command.add("cmd.exe");
+                    command.add("/c");
+                }
+                command.add(forgeRunner.getAbsolutePath());
+            } else {
+                command.add(getJavaExecutable());
+                command.addAll(vmArguments);
+                command.add("-jar");
+                command.add(jarFile);
+            }
+
             command.addAll(Arrays.stream(args).filter(arg -> !arg.startsWith("--cosmic")).toList());
 
             logger.info("Starting Minecraft server with command: {}", String.join(" ", command));
