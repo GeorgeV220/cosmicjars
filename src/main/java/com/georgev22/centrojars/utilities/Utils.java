@@ -1,0 +1,90 @@
+package com.georgev22.centrojars.utilities;
+
+import com.georgev22.centrojars.Main;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class Utils {
+
+    /**
+     * Generates a progress bar string based on the given progress percentage.
+     *
+     * @param progress Progress percentage.
+     * @return Progress bar string.
+     */
+    public static @NotNull String getProgressBar(int progress) {
+        StringBuilder progressBar = new StringBuilder("[");
+        int numChars = progress / 2;
+        for (int i = 0; i < 50; i++) {
+            if (i < numChars) {
+                progressBar.append("=");
+            } else if (i == numChars) {
+                progressBar.append(">");
+            } else {
+                progressBar.append(" ");
+            }
+        }
+        progressBar.append("] ");
+        progressBar.append(progress);
+        progressBar.append("%");
+        return progressBar.toString();
+    }
+
+    /**
+     * Downloads a file from the specified API URL and saves it to the given file path with the specified file name.
+     * Provides real-time progress updates during the download process.
+     *
+     * @param apiUrl   The URL of the file to download.
+     * @param filePath The directory where the downloaded file will be saved.
+     * @param fileName The name of the downloaded file.
+     * @return The absolute path of the downloaded file.
+     * @throws IOException If an I/O error occurs during the download process.
+     */
+    public static @NotNull String downloadFile(String apiUrl, String filePath, String fileName) throws IOException {
+        File outputFile = new File(filePath + fileName);
+        if (outputFile.getParentFile().mkdirs()) {
+            Main.getInstance().getLogger().info("Created directory: {}", filePath);
+        }
+
+        HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+        int contentLength = connection.getContentLength();
+
+        try (InputStream inputStream = connection.getInputStream();
+             FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            int totalBytesRead = 0;
+            long startTime = System.nanoTime();
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                long currentTime = System.nanoTime();
+                long elapsedTime = currentTime - startTime;
+                double speed = totalBytesRead / (elapsedTime / 1e9);
+
+                double remainingBytes = contentLength - totalBytesRead;
+                double timeLeft = remainingBytes / speed;
+
+                int progress = (int) (totalBytesRead * 100.0 / contentLength);
+                String progressBar = Utils.getProgressBar(progress);
+
+                System.out.printf("\rDownloading... %s  Speed: %.2f KB/s  Time left: %.2f seconds",
+                        progressBar, speed / 1024, timeLeft);
+                System.out.flush();
+            }
+
+            System.out.println();
+        }
+
+        Main.getInstance().getLogger().info("Jar downloaded successfully: {}", outputFile.getAbsolutePath());
+        return outputFile.getAbsolutePath();
+    }
+
+}
