@@ -1,10 +1,7 @@
 package com.georgev22.cosmicjars;
 
 import com.georgev22.cosmicjars.providers.*;
-import com.georgev22.cosmicjars.providers.implementations.CentroJarProvider;
-import com.georgev22.cosmicjars.providers.implementations.MohistProvider;
-import com.georgev22.cosmicjars.providers.implementations.PaperProvider;
-import com.georgev22.cosmicjars.providers.implementations.PurpurProvider;
+import com.georgev22.cosmicjars.providers.implementations.*;
 import com.georgev22.cosmicjars.utilities.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -250,16 +247,24 @@ public class Main {
      * @param version        Server version.
      * @return Absolute path of the downloaded JAR file, or null if download failed.
      */
-    private @Nullable String downloadJar(String type, @NotNull String implementation, String version) {
+    private @Nullable String downloadJar(@NotNull String type, @NotNull String implementation, @NotNull String version) {
         Provider provider;
-        if (implementation.equalsIgnoreCase("purpur")) {
-            provider = new PurpurProvider(type, implementation, version);
-        } else if (implementation.equalsIgnoreCase("paper") || implementation.equalsIgnoreCase("folia")) {
-            provider = new PaperProvider(type, implementation, version);
-        } else if (implementation.equalsIgnoreCase("mohist") || implementation.equalsIgnoreCase("banner")) {
-            provider = new MohistProvider(type, implementation, version);
-        } else {
-            provider = new CentroJarProvider(type, implementation, version);
+        switch (type) {
+            case "servers" -> provider = switch (implementation) {
+                case "purpur" -> new PurpurProvider(type, implementation, version);
+                case "paper", "folia" -> new PaperProvider(type, implementation, version);
+                default -> new CentroJarProvider(type, implementation, version);
+            };
+            case "modded" -> provider = switch (implementation) {
+                case "mohist", "banner" -> new MohistProvider(type, implementation, version);
+                default -> new CentroJarProvider(type, implementation, version);
+            };
+            case "proxies" -> provider = switch (implementation) {
+                case "velocity" -> new PaperProvider(type, implementation, version);
+                case "bungeecord" -> new BungeeCordProvider(type, implementation, version);
+                default -> new CentroJarProvider(type, implementation, version);
+            };
+            default -> provider = new CentroJarProvider(type, implementation, version);
         }
         return provider.downloadJar();
     }
