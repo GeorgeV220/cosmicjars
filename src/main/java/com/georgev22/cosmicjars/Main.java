@@ -12,6 +12,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import javax.swing.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -24,10 +25,14 @@ public class Main {
     private static final File WORKING_DIRECTORY = new File(".");
     private final String PROPERTIES_FILE = "cosmicjars.properties";
     private Properties PROPERTIES;
+    private Process minecraftServerProcess;
     private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
     private final Logger logger = LogManager.getLogger("CosmicJars");
+    private final boolean gui;
+    private final String[] programArguments;
 
     private static Main instance;
+    private PrintWriter serverCommandWriter;
 
     /**
      * Gets the singleton instance of the CentersJars application.
@@ -38,20 +43,29 @@ public class Main {
         return instance;
     }
 
+    public static void setInstance(Main instance) {
+        Main.instance = instance;
+    }
+
     /**
      * Main method to start the CosmicJars application.
      *
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        instance = new Main();
-        instance.start(args);
+        instance = new Main(false, args);
+        instance.start();
+    }
+
+    public Main(boolean gui, String[] args) {
+        this.programArguments = args;
+        this.gui = gui;
     }
 
     /**
      * Starts the CosmicJars application.
      */
-    public void start(String[] args) {
+    public void start() {
         configureLogging();
         logger.info("CosmicJars starting...");
         logger.info("""
@@ -81,7 +95,7 @@ public class Main {
             saveProperties(PROPERTIES);
         }
 
-        List<String> cosmicArgs = Arrays.stream(args).filter(arg -> arg.startsWith("--cosmic")).toList();
+        List<String> cosmicArgs = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmic")).toList();
 
         Optional<String> cosmicServerTypeArg = cosmicArgs.stream()
                 .filter(arg -> arg.startsWith("--cosmicServerType="))
@@ -126,7 +140,7 @@ public class Main {
 
         String fileName = downloadJar(serverType, serverImplementation, version);
         if (fileName != null) {
-            startMinecraftServer(fileName, args);
+            startMinecraftServer(gui, fileName, this.programArguments);
         } else {
             logger.error("Failed to download jar.");
         }
@@ -275,7 +289,7 @@ public class Main {
      * @param jarFile Path to the Minecraft server JAR file.
      * @param args    Command line arguments.
      */
-    private void startMinecraftServer(String jarFile, String[] args) {
+    private void startMinecraftServer(boolean gui, String jarFile, String[] args) {
         try {
             List<String> vmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
@@ -316,28 +330,47 @@ public class Main {
 
             ProcessBuilder pb = new ProcessBuilder(command);
 
-            Process process = pb
-                    .inheritIO()
-                    .start();
+            pb.redirectErrorStream(true);
+            minecraftServerProcess = pb.start();
 
-            Runtime.getRuntime().addShutdownHook(new Thread(process::destroy));
+            serverCommandWriter = new PrintWriter(minecraftServerProcess.getOutputStream());
+            InputStream processOutput = minecraftServerProcess.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(processOutput));
 
-            while (process.isAlive()) {
+            new Thread(() -> {
                 try {
-                    int exitCode = process.waitFor();
-
-                    if (exitCode != 0) {
-                        logger.info("Minecraft server exited with code: {}", exitCode);
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String finalLine = line;
+                        SwingUtilities.invokeLater(() -> {
+                            ConsoleFrame.getInstance().printToConsole(finalLine);
+                        });
                     }
-
-                    break;
-                } catch (InterruptedException ignored) {
+                } catch (IOException e) {
+                    logger.error("Error reading Minecraft server output: {}", e.getMessage());
                 }
-            }
+            }).start();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(minecraftServerProcess::destroy));
         } catch (IOException e) {
             logger.error("Error starting Minecraft server: {}", e.getMessage());
         }
     }
+
+    public void sendCommandToServer(String command) {
+        if (minecraftServerProcess != null && minecraftServerProcess.isAlive()) {
+            serverCommandWriter.println(command);
+            serverCommandWriter.flush();
+        } else {
+            switch (command) {
+                case "exit" -> System.exit(0);
+                case "help" -> logger.info("Available commands: exit, start and help");
+                case "start" -> logger.warn("Not implemented yet.");
+                default -> logger.warn("Minecraft server is not running");
+            }
+        }
+    }
+
 
     /**
      * Gets the Java executable path.
@@ -360,5 +393,23 @@ public class Main {
         }
 
         return javaExe.getAbsolutePath();
+    }
+
+    /**
+     * Returns the program arguments.
+     *
+     * @return The program arguments.
+     */
+    public String[] getProgramArguments() {
+        return programArguments;
+    }
+
+    /**
+     * Returns true if the program is running in GUI mode.
+     *
+     * @return True if the program is running in GUI mode.
+     */
+    public boolean isGUI() {
+        return gui;
     }
 }
