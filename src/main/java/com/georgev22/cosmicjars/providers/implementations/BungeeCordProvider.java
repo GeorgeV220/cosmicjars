@@ -27,13 +27,8 @@ public class BungeeCordProvider extends Provider {
         super(serverType, serverImplementation, serverVersion);
     }
 
-    /**
-     * Abstract method to be implemented by subclasses for downloading the server jar.
-     *
-     * @return The URL of the downloaded server jar.
-     */
     @Override
-    public String downloadJar() {
+    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         this.main.getLogger().info("Fetching BungeeCord builds from {}", this.API_BASE_URL);
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(this.API_BASE_URL).openConnection();
@@ -47,9 +42,9 @@ public class BungeeCordProvider extends Provider {
                 String latest = String.valueOf(bungeeCordInfo.getLatestBuild().getNumber());
                 String apiUrl = bungeeCordInfo.getLatestBuild().getUrl().replace("http", "https") + "artifact/bootstrap/target/BungeeCord.jar";
                 this.main.getLogger().debug("Fetching BungeeCord link: {}", apiUrl);
-                String fileName = this.getServerImplementation() + ".jar";
+                String fileName = serverImplementation + ".jar";
 
-                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/";
+                String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/";
                 Properties properties = this.main.getProperties();
                 String localPurpurBuild = properties.getProperty("localBuild.bungeeCord", "0");
                 if (!localPurpurBuild.equals(String.valueOf(bungeeCordInfo.getLatestBuild().getNumber()))) {

@@ -34,13 +34,16 @@ public class PurpurProvider extends Provider {
     }
 
     /**
-     * Downloads the server jar from PurpurMC.
+     * Downloads and returns the path to the server jar.
      *
-     * @return The URL of the downloaded server jar, or null if the download fails.
+     * @param serverType           Type of the server.
+     * @param serverImplementation Name of the server implementation.
+     * @param serverVersion        Version of the server.
+     * @return The path to the server jar.
      */
     @Override
-    public String downloadJar() {
-        String purpurAPI = API_BASE_URL + this.getServerVersion() + "/";
+    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+        String purpurAPI = API_BASE_URL + serverVersion + "/";
         this.main.getLogger().debug("Fetching Purpur link: {}", purpurAPI);
         try {
             URL purpurBuildsURL = new URL(purpurAPI);
@@ -52,8 +55,8 @@ public class PurpurProvider extends Provider {
                 PurpurInfo purpurInfo = gson.fromJson(new InputStreamReader(purpurConnection.getInputStream()), PurpurInfo.class);
                 String latest = purpurInfo.builds().latest();
                 String apiUrl = purpurAPI + latest + "/download";
-                String fileName = this.getServerVersion() + ".jar";
-                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String fileName = serverVersion + ".jar";
+                String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/";
                 Properties properties = this.main.getProperties();
                 String localPurpurBuild = properties.getProperty("localBuild.purpur", "0");
                 if (!localPurpurBuild.equals(purpurInfo.builds().latest())) {
@@ -62,7 +65,7 @@ public class PurpurProvider extends Provider {
                 } else {
                     File file = new File(filePath + fileName);
                     if (file.exists()) {
-                        this.main.getLogger().info("Skipping download of {} jar. File with build number {} already exists: {}", this.getServerImplementation(), purpurInfo.builds().latest(), filePath + fileName);
+                        this.main.getLogger().info("Skipping download of {} jar. File with build number {} already exists: {}", serverImplementation, purpurInfo.builds().latest(), filePath + fileName);
                         return filePath + fileName;
                     }
                 }

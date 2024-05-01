@@ -34,13 +34,16 @@ public class MohistProvider extends Provider {
     }
 
     /**
-     * Downloads the server jar from MohistMC.
+     * Downloads and returns the path to the server jar.
      *
-     * @return The URL of the downloaded server jar, or null if the download fails.
+     * @param serverType           Type of the server.
+     * @param serverImplementation Name of the server implementation.
+     * @param serverVersion        Version of the server.
+     * @return The path to the server jar.
      */
     @Override
-    public String downloadJar() {
-        String mohistAPI = String.format(API_BASE_URL, this.getServerImplementation(), this.getServerVersion());
+    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+        String mohistAPI = String.format(API_BASE_URL, serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching Mohist link: {}", mohistAPI);
         try {
             URL mohistBuildsURL = new URL(mohistAPI);
@@ -51,17 +54,17 @@ public class MohistProvider extends Provider {
                 Gson gson = new Gson();
                 MohistInfo mohistInfo = gson.fromJson(new InputStreamReader(connection.getInputStream()), MohistInfo.class);
                 String apiUrl = mohistInfo.getLatestBuild().getUrl();
-                String fileName = this.getServerVersion() + ".jar";
-                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String fileName = serverVersion + ".jar";
+                String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/";
                 Properties properties = this.main.getProperties();
-                String localPurpurBuild = properties.getProperty("localBuild." + this.getServerImplementation(), "0");
+                String localPurpurBuild = properties.getProperty("localBuild." + serverImplementation, "0");
                 if (!localPurpurBuild.equals(String.valueOf(mohistInfo.getLatestBuild().getNumber()))) {
-                    properties.setProperty("localBuild." + this.getServerImplementation(), String.valueOf(mohistInfo.getLatestBuild().getNumber()));
+                    properties.setProperty("localBuild." + serverImplementation, String.valueOf(mohistInfo.getLatestBuild().getNumber()));
                     this.main.saveProperties(properties);
                 } else {
                     File file = new File(filePath + fileName);
                     if (file.exists()) {
-                        this.main.getLogger().info("Skipping download of {} jar. File with build number {} already exists: {}", this.getServerImplementation(), String.valueOf(mohistInfo.getLatestBuild().getNumber()), filePath + fileName);
+                        this.main.getLogger().info("Skipping download of {} jar. File with build number {} already exists: {}", serverImplementation, String.valueOf(mohistInfo.getLatestBuild().getNumber()), filePath + fileName);
                         return filePath + fileName;
                     }
                 }

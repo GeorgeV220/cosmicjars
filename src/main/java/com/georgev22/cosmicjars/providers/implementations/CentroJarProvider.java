@@ -20,22 +20,25 @@ public class CentroJarProvider extends Provider {
     /**
      * Constructs a new CentroJarProvider with the specified server type, implementation, and version.
      *
-     * @param serverType            Type of the server.
+     * @param serverType           Type of the server.
      * @param serverImplementation Name of the server implementation.
-     * @param serverVersion         Version of the server.
+     * @param serverVersion        Version of the server.
      */
     public CentroJarProvider(String serverType, String serverImplementation, String serverVersion) {
         super(serverType, serverImplementation, serverVersion);
     }
 
     /**
-     * Downloads the server jar from the CentroJars API.
+     * Downloads and returns the path to the server jar.
      *
-     * @return The URL of the downloaded server jar, or null if the download fails.
+     * @param serverType           Type of the server.
+     * @param serverImplementation Name of the server implementation.
+     * @param serverVersion        Version of the server.
+     * @return The path to the server jar.
      */
     @Override
-    public String downloadJar() {
-        String apiUrl = API_BASE_URL + "fetchJar/" + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + ".jar";
+    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+        String apiUrl = API_BASE_URL + "fetchJar/" + serverType + "/" + serverImplementation + "/" + serverVersion + ".jar";
         this.main.getLogger().debug("Fetching jar: {}", apiUrl);
         try {
             URL url = new URL(apiUrl);
@@ -45,7 +48,7 @@ public class CentroJarProvider extends Provider {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 String fileName = apiUrl.substring(apiUrl.lastIndexOf('/') + 1);
 
-                String filePath = this.main.getCosmicJarsFolder() + this.getServerType() + "/" + this.getServerImplementation() + "/" + this.getServerVersion() + "/";
+                String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/";
 
                 return Utils.downloadFile(apiUrl, filePath, fileName);
             } else {
