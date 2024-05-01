@@ -8,9 +8,13 @@ version = '1.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven { url = "https://logicaldoc.sourceforge.net/maven/" }
+    maven { url = "https://repository.liferay.com/nexus/content/repositories/public/" }
 }
 
 dependencies {
+    implementation 'com.github.oshi:oshi-core:6.6.0'
+    implementation 'org.jfree:jfreechart:1.5.4'
     implementation 'org.jetbrains:annotations:24.0.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.23.1'
