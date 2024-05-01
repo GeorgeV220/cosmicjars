@@ -300,6 +300,7 @@ public class Main {
     }
 
     public void sendCommand(String[] command) {
+        this.logger.info("Received command: {}", String.join(" ", command));
         switch (command[0]) {
             case "exit" -> {
                 Runtime runtime = Runtime.getRuntime();
@@ -316,8 +317,10 @@ public class Main {
                 }
                 if (startArguments.length < 3) {
                     if (this.minecraftServer != null) {
+                        this.logger.info("Starting Minecraft server with the current settings.");
                         this.minecraftServer.start();
                     } else {
+                        this.logger.info("Starting Minecraft server with the following settings: server.type={}, server.implementation={}, server.version={}", serverType, serverImplementation, serverVersion);
                         this.minecraftServer = new MinecraftServer(
                                 Provider.getProvider(serverType, serverImplementation, serverVersion),
                                 WORKING_DIRECTORY,
@@ -327,6 +330,7 @@ public class Main {
                         this.minecraftServer.start();
                     }
                 } else {
+                    this.logger.info("Starting Minecraft server with the following settings: type={}, implementation={}, version={}", startArguments[0], startArguments[1], startArguments[2]);
                     this.minecraftServer = new MinecraftServer(
                             Provider.getProvider(startArguments[0], startArguments[1], startArguments[2]),
                             WORKING_DIRECTORY,
