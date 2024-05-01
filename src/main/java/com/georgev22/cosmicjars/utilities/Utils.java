@@ -61,29 +61,31 @@ public class Utils {
             int bytesRead;
             int totalBytesRead = 0;
             long startTime = System.nanoTime();
+            int lastLoggedProgress = -1; // To keep track of the last logged progress
+
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
                 totalBytesRead += bytesRead;
 
-                long currentTime = System.nanoTime();
-                long elapsedTime = currentTime - startTime;
-                double speed = totalBytesRead / (elapsedTime / 1e9);
-
-                double remainingBytes = contentLength - totalBytesRead;
-                double timeLeft = remainingBytes / speed;
-
                 int progress = (int) (totalBytesRead * 100.0 / contentLength);
-                String progressBar = Utils.getProgressBar(progress);
 
-                System.out.printf("\rDownloading... %s  Speed: %.2f KB/s  Time left: %.2f seconds",
-                        progressBar, speed / 1024, timeLeft);
-                System.out.flush();
+                if (progress >= lastLoggedProgress + 10 || progress == 100) {
+                    lastLoggedProgress = progress;
+                    long currentTime = System.nanoTime();
+                    long elapsedTime = currentTime - startTime;
+                    double speed = totalBytesRead / (elapsedTime / 1e9);
+                    double remainingBytes = contentLength - totalBytesRead;
+                    double timeLeft = remainingBytes / speed;
+
+                    String progressBar = Utils.getProgressBar(progress);
+
+                    Main.getInstance().getLogger().info("\rDownloading... {}  Speed: {} KB/s  Time left: {} seconds",
+                            progressBar, String.format("%.2f", speed / 1024), String.format("%.2f", timeLeft));
+                }
             }
-
-            System.out.println();
         }
 
-        Main.getInstance().getLogger().info("Jar downloaded successfully: {}", outputFile.getAbsolutePath());
+        Main.getInstance().getLogger().info("File downloaded successfully: {}", outputFile.getAbsolutePath());
         return outputFile.getAbsolutePath();
     }
 
