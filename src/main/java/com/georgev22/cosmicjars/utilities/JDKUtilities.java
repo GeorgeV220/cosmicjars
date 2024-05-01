@@ -60,6 +60,8 @@ public class JDKUtilities {
             return "java";
         }
 
+        this.main.getLogger().info("Java executable found: {}", javaExe.getAbsolutePath());
+
         return javaExe.getAbsolutePath();
     }
 
