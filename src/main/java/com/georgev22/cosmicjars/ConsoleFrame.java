@@ -1,31 +1,50 @@
 package com.georgev22.cosmicjars;
 
+import com.georgev22.cosmicjars.helpers.MinecraftServer;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jfree.chart.*;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+import oshi.SystemInfo;
+import oshi.software.os.OSProcess;
+import oshi.software.os.OperatingSystem;
+
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 public class ConsoleFrame extends JFrame {
     private final JTextPane consoleTextPane;
     private final JTextField commandTextField;
     private final JTextArea infoPanelTextArea;
+    private final JPanel infoPanel = new JPanel();
     private static ConsoleFrame instance;
+    private final List<Long> processIds = new ArrayList<>();
+    private final Main main = Main.getInstance();
 
     public static ConsoleFrame getInstance() {
         return instance;
     }
 
-    public ConsoleFrame(String[] args) {
+    public ConsoleFrame() {
         instance = this;
-        setTitle("Console Program");
+        setTitle("CosmicJars");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
+        setSize(800, 600);
 
-        // Main panel containing console, command input, and info panel
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // Console panel
         JPanel consolePanel = new JPanel(new BorderLayout());
         consoleTextPane = new JTextPane();
         consoleTextPane.setEditable(false);
@@ -35,15 +54,19 @@ public class ConsoleFrame extends JFrame {
         consolePanel.add(consoleScrollPane, BorderLayout.CENTER);
         mainPanel.add(consolePanel, BorderLayout.CENTER);
 
-        // Command input panel
         JPanel commandPanel = new JPanel(new BorderLayout());
         commandTextField = new JTextField();
         JButton sendButton = new JButton("Send");
         Action action = new AbstractAction("send") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String command = commandTextField.getText();
-                Main.getInstance().sendCommandToServer(command);
+                String[] command = commandTextField.getText().split(" ");
+                MinecraftServer server = main.getMinecraftServer();
+                if (server != null && (server.getMinecraftServerProcess() != null && server.getMinecraftServerProcess().isAlive())) {
+                    server.sendCommandToServer(command);
+                } else {
+                    main.sendCommand(command);
+                }
                 commandTextField.setText("");
             }
         };
@@ -56,20 +79,114 @@ public class ConsoleFrame extends JFrame {
         commandPanel.add(sendButton, BorderLayout.EAST);
         mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
-        // Info panel
-        JPanel infoPanel = new JPanel(new BorderLayout());
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanelTextArea = new JTextArea();
         infoPanelTextArea.setEditable(false);
         JScrollPane infoScrollPane = new JScrollPane(infoPanelTextArea);
-        infoPanel.add(infoScrollPane, BorderLayout.CENTER);
+        infoPanel.add(new JLabel("Info"));
         mainPanel.add(infoPanel, BorderLayout.EAST);
 
         getContentPane().add(mainPanel);
 
-        // Redirect System.out and System.err to JTextAreas
-        PrintStream consolePrintStream = new PrintStream(new ConsoleOutputStream(consoleTextPane));
+        PrintStream consolePrintStream = new PrintStream(new ConsoleOutputStream(consoleTextPane, this.main.getLogger()));
         System.setOut(consolePrintStream);
         System.setErr(consolePrintStream);
+
+        JLabel cpuUsageLabel = new JLabel("CPU Usage: ");
+        JLabel memoryUsageLabel = new JLabel("Memory Usage: ");
+        JLabel systemFreeMemoryLabel = new JLabel("Total Free Memory: ");
+
+        SystemInfo sysInfo = new SystemInfo();
+        OperatingSystem os = sysInfo.getOperatingSystem();
+
+        DefaultCategoryDataset cpuDataset = new DefaultCategoryDataset();
+        JFreeChart cpuChart = createChart("CPU Usage", "Time", "Usage (%)", cpuDataset);
+        ChartPanel cpuChartPanel = createChartPanel(cpuChart);
+
+        DefaultCategoryDataset memoryDataset = new DefaultCategoryDataset();
+        JFreeChart memoryChart = createChart("Memory Usage", "Time", "Usage (MB)", memoryDataset);
+        ChartPanel memoryChartPanel = createChartPanel(memoryChart);
+
+        Timer timer = new Timer(1000, e -> {
+            DecimalFormat df = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+            double totalCpuUsage = 0;
+            double totalMemoryUsage = 0;
+
+            for (Iterator<Long> it = processIds.iterator(); it.hasNext(); ) {
+                try {
+                    long pid = it.next();
+                    OSProcess process = os.getProcess((int) pid);
+                    if (process == null) {
+                        it.remove();
+                        continue;
+                    }
+                    totalCpuUsage += process.getProcessCpuLoadCumulative();
+                    totalMemoryUsage += process.getResidentSetSize();
+                } catch (Exception ex) {
+                    Main.getInstance().getLogger().error("Error getting process CPU usage: {}", ex.getMessage());
+                    ((Timer) e.getSource()).stop();
+                    break;
+                }
+            }
+
+            double averageCpuUsage = processIds.isEmpty() ? 0 : totalCpuUsage / processIds.size();
+            cpuUsageLabel.setText("CPU Usage: " + df.format(averageCpuUsage) + "%");
+            cpuDataset.addValue(averageCpuUsage, "Usage", String.valueOf(System.currentTimeMillis()));
+
+            double averageMemoryUsage = processIds.isEmpty() ? 0 : totalMemoryUsage / (1024 * 1024 * processIds.size());
+            memoryUsageLabel.setText("Memory Usage: " + df.format(averageMemoryUsage) + "MB");
+            memoryDataset.addValue(averageMemoryUsage, "Usage", String.valueOf(System.currentTimeMillis()));
+            systemFreeMemoryLabel.setText("Free Memory: " + sysInfo.getHardware().getMemory().getAvailable() / (1024 * 1024) + "MB");
+        });
+        timer.start();
+
+        infoPanel.add(new JLabel("OS: " + os.getVersionInfo().toString()));
+        infoPanel.add(new JLabel("Java: " + System.getProperty("java.version")));
+        infoPanel.add(new JLabel("Total Memory: " + sysInfo.getHardware().getMemory().getTotal() / (1024 * 1024) + "MB"));
+        infoPanel.add(systemFreeMemoryLabel);
+        infoPanel.add(new JLabel("Virtual Memory: " + sysInfo.getHardware().getMemory().getVirtualMemory().getVirtualMax() / (1024 * 1024) + "MB"));
+        infoPanel.add(new JLabel("CPU: " + sysInfo.getHardware().getProcessor().getProcessorIdentifier().getName()));
+        infoPanel.add(new JLabel("CPU Cores: " + sysInfo.getHardware().getProcessor().getPhysicalProcessorCount()));
+        infoPanel.add(cpuUsageLabel);
+        infoPanel.add(cpuChartPanel);
+        infoPanel.add(memoryUsageLabel);
+        infoPanel.add(memoryChartPanel);
+        setVisible(true);
+    }
+
+    /**
+     * Adds CPU and memory usage monitoring for specified process IDs.
+     *
+     * @param processIds An array of process IDs to monitor.
+     */
+    public void addCpuAndMemoryUsage(Long... processIds) {
+        this.processIds.addAll(Arrays.asList(processIds));
+    }
+
+    /**
+     * Creates a line chart.
+     *
+     * @param title      The chart title.
+     * @param xAxisLabel The label for the X-axis.
+     * @param yAxisLabel The label for the Y-axis.
+     * @param dataset    The dataset for the chart.
+     * @return A JFreeChart object representing the line chart.
+     */
+    @Contract("_, _, _, _ -> new")
+    private @NotNull JFreeChart createChart(String title, String xAxisLabel, String yAxisLabel, DefaultCategoryDataset dataset) {
+        return ChartFactory.createLineChart(title, xAxisLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, true, true, false);
+    }
+
+    /**
+     * Creates a panel for displaying a chart.
+     *
+     * @param chart The chart to be displayed in the panel.
+     * @return A ChartPanel object containing the specified chart.
+     */
+    private @NotNull ChartPanel createChartPanel(JFreeChart chart) {
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(300, 200));
+        return chartPanel;
     }
 
     public void printToConsole(String text) {
@@ -80,12 +197,13 @@ public class ConsoleFrame extends JFrame {
         infoPanelTextArea.append(text + "\n");
     }
 
-    // Custom OutputStream to redirect output to JTextArea
     private static class ConsoleOutputStream extends OutputStream {
         private final JTextPane textPane;
+        private final Logger logger;
 
-        public ConsoleOutputStream(JTextPane textPane) {
+        public ConsoleOutputStream(JTextPane textPane, Logger logger) {
             this.textPane = textPane;
+            this.logger = logger;
         }
 
         @Override
@@ -96,19 +214,9 @@ public class ConsoleFrame extends JFrame {
             try {
                 doc.insertString(doc.getLength(), String.valueOf((char) b), style);
             } catch (BadLocationException e) {
-                Main.getInstance().getLogger().error("Error writing to console: {}", e.getMessage());
+                logger.error("Error writing to console: {}", e.getMessage());
             }
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ConsoleFrame frame = new ConsoleFrame(args);
-            frame.setVisible(true);
-            // Run Main.start(args)
-            Main mainInstance = new Main(true, args);
-            Main.setInstance(mainInstance);
-            mainInstance.start();
-        });
-    }
 }
