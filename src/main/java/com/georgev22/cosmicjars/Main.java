@@ -1,8 +1,8 @@
 package com.georgev22.cosmicjars;
 
+import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.providers.*;
-import com.georgev22.cosmicjars.providers.implementations.*;
-import com.georgev22.cosmicjars.utilities.Utils;
+import com.georgev22.cosmicjars.utilities.JDKUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -14,25 +14,26 @@ import org.jline.terminal.TerminalBuilder;
 
 import javax.swing.*;
 import java.io.*;
-import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
  * Main class for CosmicJars application.
  */
 public class Main {
+    private static Main instance;
 
-    private static final File WORKING_DIRECTORY = new File(".");
+    private final File WORKING_DIRECTORY = new File(".");
     private final String PROPERTIES_FILE = "cosmicjars.properties";
-    private Properties PROPERTIES;
-    private Process minecraftServerProcess;
     private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
-    private final Logger logger = LogManager.getLogger("CosmicJars");
+    private final Logger logger;
     private final boolean gui;
     private final String[] programArguments;
+    private final JDKUtilities jdkUtilities;
 
-    private static Main instance;
-    private PrintWriter serverCommandWriter;
+    private Properties PROPERTIES;
+    private MinecraftServer minecraftServer;
+
+    private String serverType, serverImplementation, serverVersion;
 
     /**
      * Gets the singleton instance of the CentersJars application.
@@ -53,20 +54,24 @@ public class Main {
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        instance = new Main(false, args);
-        instance.start();
+        new Main(args);
     }
 
-    public Main(boolean gui, String[] args) {
+    public Main(String[] args) {
+        System.setProperty("log4j.configurationFile", "log4j2.xml");
+        instance = this;
+        this.jdkUtilities = new JDKUtilities();
         this.programArguments = args;
-        this.gui = gui;
-    }
-
-    /**
-     * Starts the CosmicJars application.
-     */
-    public void start() {
-        configureLogging();
+        List<String> cosmicArgs = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmic")).toList();
+        Optional<String> guiArg = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmicgui")).findFirst();
+        this.gui = guiArg.isPresent() && guiArg.get().equals("--cosmicgui");
+        if (gui) {
+            SwingUtilities.invokeLater(() -> {
+                ConsoleFrame frame = new ConsoleFrame();
+                frame.setVisible(true);
+            });
+        }
+        this.logger = LogManager.getLogger("CosmicJars");
         logger.info("CosmicJars starting...");
         logger.info("""
 
@@ -95,8 +100,6 @@ public class Main {
             saveProperties(PROPERTIES);
         }
 
-        List<String> cosmicArgs = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmic")).toList();
-
         Optional<String> cosmicServerTypeArg = cosmicArgs.stream()
                 .filter(arg -> arg.startsWith("--cosmicServerType="))
                 .findFirst();
@@ -112,7 +115,7 @@ public class Main {
 
         String serverType = PROPERTIES.getProperty("server.type");
         String serverImplementation = PROPERTIES.getProperty("server.implementation");
-        String version = PROPERTIES.getProperty("server.version");
+        String serverVersion = PROPERTIES.getProperty("server.version");
 
         if (cosmicServerTypeArg.isPresent()) {
             serverType = cosmicServerTypeArg.get().split("=")[1];
@@ -125,25 +128,27 @@ public class Main {
         }
 
         if (cosmicServerVersionArg.isPresent()) {
-            version = cosmicServerVersionArg.get().split("=")[1];
-            logger.info("Overriding server version with: {}", version);
+            serverVersion = cosmicServerVersionArg.get().split("=")[1];
+            logger.info("Overriding server version with: {}", serverVersion);
         }
 
-        if (serverType == null || serverImplementation == null || version == null) {
+        if (serverType == null || serverImplementation == null || serverVersion == null) {
             logger.error("Failed to get server details.");
             return;
         }
 
-        logger.info("Server type: {}", serverType);
-        logger.info("Server implementation: {}", serverImplementation);
-        logger.info("Server version: {}", version);
+        this.serverType = serverType;
+        this.serverImplementation = serverImplementation;
+        this.serverVersion = serverVersion;
 
-        String fileName = downloadJar(serverType, serverImplementation, version);
-        if (fileName != null) {
-            startMinecraftServer(gui, fileName, this.programArguments);
-        } else {
-            logger.error("Failed to download jar.");
-        }
+        String[] minecraftServerArguments = Arrays.stream(this.programArguments).filter(arg -> !arg.startsWith("--cosmic")).toArray(String[]::new);
+        this.minecraftServer = new MinecraftServer(
+                Provider.getProvider(serverType, serverImplementation, serverVersion),
+                WORKING_DIRECTORY,
+                jdkUtilities.getJavaExecutable(),
+                minecraftServerArguments
+        );
+        this.minecraftServer.start();
     }
 
     /**
@@ -162,6 +167,10 @@ public class Main {
      */
     public String getCosmicJarsFolder() {
         return COSMIC_JARS_FOLDER;
+    }
+
+    public File getWorkDir() {
+        return this.WORKING_DIRECTORY;
     }
 
     /**
@@ -183,18 +192,11 @@ public class Main {
     }
 
     /**
-     * Configures logging for the application.
-     */
-    private void configureLogging() {
-        System.setProperty("log4j.configurationFile", "log4j2.xml");
-    }
-
-    /**
      * Loads properties from the properties file.
      *
      * @return Loaded properties.
      */
-    private Properties loadProperties() {
+    public Properties loadProperties() {
         if (PROPERTIES == null) {
             try {
                 PROPERTIES = new Properties();
@@ -225,15 +227,23 @@ public class Main {
             logger.info("Server Type (e.g., servers): ");
             String serverType = lineReader.readLine();
             logger.info("Selected Server Type: {}", serverType);
+
             logger.info("Server Implementation (e.g., spigot): ");
             String serverImplementation = lineReader.readLine();
             logger.info("Selected Server Implementation: {}", serverImplementation);
+
             logger.info("Server Version (e.g., latest): ");
             String version = lineReader.readLine();
             logger.info("Selected Server Version: {}", version);
+
+            logger.info("JDK Version (e.g., 17): ");
+            String jdkVersion = lineReader.readLine();
+            logger.info("Selected JDK Version: {}", jdkVersion);
+
             properties.setProperty("server.type", serverType);
             properties.setProperty("server.implementation", serverImplementation);
             properties.setProperty("server.version", version);
+            properties.setProperty("jdk.version", jdkVersion);
         } catch (IOException e) {
             logger.error("Error prompting user for server details: {}", e.getMessage());
         }
@@ -254,148 +264,6 @@ public class Main {
     }
 
     /**
-     * Downloads the JAR file.
-     *
-     * @param type           Server type.
-     * @param implementation Server implementation.
-     * @param version        Server version.
-     * @return Absolute path of the downloaded JAR file, or null if download failed.
-     */
-    private @Nullable String downloadJar(@NotNull String type, @NotNull String implementation, @NotNull String version) {
-        Provider provider;
-        switch (type) {
-            case "servers" -> provider = switch (implementation) {
-                case "purpur" -> new PurpurProvider(type, implementation, version);
-                case "paper", "folia" -> new PaperProvider(type, implementation, version);
-                default -> new CentroJarProvider(type, implementation, version);
-            };
-            case "modded" -> provider = switch (implementation) {
-                case "mohist", "banner" -> new MohistProvider(type, implementation, version);
-                default -> new CentroJarProvider(type, implementation, version);
-            };
-            case "proxies" -> provider = switch (implementation) {
-                case "velocity" -> new PaperProvider(type, implementation, version);
-                case "bungeecord" -> new BungeeCordProvider(type, implementation, version);
-                default -> new CentroJarProvider(type, implementation, version);
-            };
-            default -> provider = new CentroJarProvider(type, implementation, version);
-        }
-        return provider.downloadJar();
-    }
-
-    /**
-     * Starts the Minecraft server using the specified JAR file and command line arguments.
-     *
-     * @param jarFile Path to the Minecraft server JAR file.
-     * @param args    Command line arguments.
-     */
-    private void startMinecraftServer(boolean gui, String jarFile, String[] args) {
-        try {
-            List<String> vmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-
-            LinkedList<String> command = new LinkedList<>();
-
-            if (PROPERTIES.getProperty("server.implementation").equalsIgnoreCase("forge")
-                    || PROPERTIES.getProperty("server.implementation").equalsIgnoreCase("mohist")) {
-                try (FileOutputStream fos = new FileOutputStream(new File(WORKING_DIRECTORY, "user_jvm_args.txt"))) {
-                    StringBuilder sb = new StringBuilder();
-                    for (String arg : vmArguments) {
-                        sb.append(arg).append(" ");
-                    }
-                    fos.write(sb.toString().getBytes());
-                } catch (IOException e) {
-                    logger.error("Failed to write user JVM arguments: {}", e.getMessage());
-                }
-                File forgeRunner = new File(WORKING_DIRECTORY, Utils.isWindows() ? "run.bat" : "run.sh");
-                if (!forgeRunner.exists()) {
-                    logger.error("Could not find forge runner at: {}", forgeRunner.getAbsolutePath());
-                    System.exit(1);
-                }
-
-                if (Utils.isWindows()) {
-                    command.add("cmd.exe");
-                    command.add("/c");
-                }
-                command.add(forgeRunner.getAbsolutePath());
-            } else {
-                command.add(getJavaExecutable());
-                command.addAll(vmArguments);
-                command.add("-jar");
-                command.add(jarFile);
-            }
-
-            command.addAll(Arrays.stream(args).filter(arg -> !arg.startsWith("--cosmic")).toList());
-
-            logger.info("Starting Minecraft server with command: {}", String.join(" ", command));
-
-            ProcessBuilder pb = new ProcessBuilder(command);
-
-            pb.redirectErrorStream(true);
-            minecraftServerProcess = pb.start();
-
-            serverCommandWriter = new PrintWriter(minecraftServerProcess.getOutputStream());
-            InputStream processOutput = minecraftServerProcess.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(processOutput));
-
-            new Thread(() -> {
-                try {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String finalLine = line;
-                        SwingUtilities.invokeLater(() -> {
-                            ConsoleFrame.getInstance().printToConsole(finalLine);
-                        });
-                    }
-                } catch (IOException e) {
-                    logger.error("Error reading Minecraft server output: {}", e.getMessage());
-                }
-            }).start();
-
-            Runtime.getRuntime().addShutdownHook(new Thread(minecraftServerProcess::destroy));
-        } catch (IOException e) {
-            logger.error("Error starting Minecraft server: {}", e.getMessage());
-        }
-    }
-
-    public void sendCommandToServer(String command) {
-        if (minecraftServerProcess != null && minecraftServerProcess.isAlive()) {
-            serverCommandWriter.println(command);
-            serverCommandWriter.flush();
-        } else {
-            switch (command) {
-                case "exit" -> System.exit(0);
-                case "help" -> logger.info("Available commands: exit, start and help");
-                case "start" -> logger.warn("Not implemented yet.");
-                default -> logger.warn("Minecraft server is not running");
-            }
-        }
-    }
-
-
-    /**
-     * Gets the Java executable path.
-     *
-     * @return The Java executable path.
-     */
-    @NotNull
-    private static String getJavaExecutable() {
-        File binDir = new File(System.getProperty("java.home"), "bin");
-        File javaExe = new File(binDir, "java");
-
-        if (!javaExe.exists()) {
-            javaExe = new File(binDir, "java.exe");
-        }
-
-        if (!javaExe.exists()) {
-            getInstance().getLogger().error("We could not find your java executable inside '{}' - Using command 'java' instead", binDir.getAbsolutePath());
-
-            return "java";
-        }
-
-        return javaExe.getAbsolutePath();
-    }
-
-    /**
      * Returns the program arguments.
      *
      * @return The program arguments.
@@ -411,5 +279,80 @@ public class Main {
      */
     public boolean isGUI() {
         return gui;
+    }
+
+    /**
+     * Returns the MinecraftServer instance.
+     *
+     * @return The MinecraftServer instance.
+     */
+    public @Nullable MinecraftServer getMinecraftServer() {
+        return this.minecraftServer;
+    }
+
+    /**
+     * Returns the JDKUtilities instance.
+     *
+     * @return The JDKUtilities instance.
+     */
+    public JDKUtilities getJDKUtilities() {
+        return jdkUtilities;
+    }
+
+    public void sendCommand(String[] command) {
+        switch (command[0]) {
+            case "exit" -> {
+                Runtime runtime = Runtime.getRuntime();
+                runtime.exit(0);
+            }
+            case "help" -> this.logger.info("Available commands: \nexit \nstart \nhelp \nconfig");
+            case "start" -> {
+                String[] startArguments = Arrays.copyOfRange(command, 1, command.length);
+                if (startArguments.length != 0) {
+                    if (startArguments[0].equalsIgnoreCase("help")) {
+                        this.logger.info("Available start arguments: <type> <implementation> <version>");
+                        return;
+                    }
+                }
+                if (startArguments.length < 3) {
+                    if (this.minecraftServer != null) {
+                        this.minecraftServer.start();
+                    } else {
+                        this.minecraftServer = new MinecraftServer(
+                                Provider.getProvider(serverType, serverImplementation, serverVersion),
+                                WORKING_DIRECTORY,
+                                jdkUtilities.getJavaExecutable(),
+                                programArguments
+                        );
+                        this.minecraftServer.start();
+                    }
+                } else {
+                    this.minecraftServer = new MinecraftServer(
+                            Provider.getProvider(startArguments[0], startArguments[1], startArguments[2]),
+                            WORKING_DIRECTORY,
+                            jdkUtilities.getJavaExecutable(),
+                            programArguments
+                    );
+                    this.minecraftServer.start();
+                }
+            }
+            case "config" -> {
+                String[] configArguments = Arrays.copyOfRange(command, 1, command.length);
+                if (configArguments.length < 2) {
+                    this.logger.info("Available config properties:");
+                    for (String key : this.getProperties().stringPropertyNames()) {
+                        this.logger.info("{}", key);
+                    }
+                    this.logger.info("Config: {}", this.getProperties().toString());
+                    this.logger.info("Working directory: {}", this.WORKING_DIRECTORY.getAbsolutePath());
+                    this.logger.info("Available config arguments: <key> <value>");
+                    return;
+                }
+                this.getProperties().setProperty(configArguments[0], configArguments[1]);
+                this.logger.info("Config property '{}' set to '{}'", configArguments[0], configArguments[1]);
+                this.saveProperties(this.getProperties());
+            }
+            default -> this.logger.info("Unknown command: {}, type 'help' for help", String.join(" ", command));
+        }
     }
 }
