@@ -32,7 +32,7 @@ public class JDKUtilities {
      * @return The path of the Java executable.
      */
     public @NotNull String getJavaExecutable() {
-        String jdkVersion = this.main.getProperties().getProperty("jdk.version", "21");
+        String jdkVersion = this.main.getConfig().getString("server.jdkVersion", "17");
         File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), jdkVersion);
         if (!jdkDir.exists()) {
             this.main.getLogger().error("JDK version '{}' does not exist - Downloading it", jdkVersion);

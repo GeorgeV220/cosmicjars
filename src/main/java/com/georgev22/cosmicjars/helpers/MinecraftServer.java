@@ -114,8 +114,8 @@ public class MinecraftServer {
 
             LinkedList<String> command = new LinkedList<>();
 
-            if (this.main.getProperties().getProperty("server.implementation").equalsIgnoreCase("forge")
-                    || this.main.getProperties().getProperty("server.implementation").equalsIgnoreCase("mohist")) {
+            if (this.main.getConfig().getString("server.implementation", "").equalsIgnoreCase("forge")
+                    || this.main.getConfig().getString("server.implementation", "").equalsIgnoreCase("mohist")) {
                 try (FileOutputStream fos = new FileOutputStream(new File(this.workDir, "user_jvm_args.txt"))) {
                     StringBuilder sb = new StringBuilder();
                     for (String arg : vmArguments) {

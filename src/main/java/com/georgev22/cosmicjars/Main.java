@@ -3,6 +3,8 @@ package com.georgev22.cosmicjars;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.providers.*;
 import com.georgev22.cosmicjars.utilities.JDKUtilities;
+import com.georgev22.library.yaml.file.FileConfiguration;
+import com.georgev22.library.yaml.file.YamlConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -23,14 +25,13 @@ public class Main {
     private static Main instance;
 
     private final File WORKING_DIRECTORY = new File(".");
-    private final String PROPERTIES_FILE = "cosmicjars.properties";
+    private FileConfiguration fileConfiguration;
+    private final File configFile;
     private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
     private final Logger logger;
     private final boolean gui;
     private final String[] programArguments;
     private final JDKUtilities jdkUtilities;
-
-    private Properties PROPERTIES;
     private MinecraftServer minecraftServer;
 
     private String serverType, serverImplementation, serverVersion;
@@ -94,10 +95,11 @@ public class Main {
                 """);
         logger.info("Made with love by George V. https://github.com/GeorgeV220");
 
-        PROPERTIES = loadProperties();
-        if (PROPERTIES.isEmpty()) {
-            PROPERTIES = promptUserForServerDetails();
-            saveProperties(PROPERTIES);
+        configFile = new File(WORKING_DIRECTORY, "centroJars.yml");
+        if (!configFile.exists()) {
+            this.fileConfiguration = promptUserForServerDetails();
+        } else {
+            this.fileConfiguration = YamlConfiguration.loadConfiguration(this.configFile);
         }
 
         Optional<String> cosmicServerTypeArg = cosmicArgs.stream()
@@ -112,10 +114,9 @@ public class Main {
                 .filter(arg -> arg.startsWith("--cosmicServerVersion="))
                 .findFirst();
 
-
-        String serverType = PROPERTIES.getProperty("server.type");
-        String serverImplementation = PROPERTIES.getProperty("server.implementation");
-        String serverVersion = PROPERTIES.getProperty("server.version");
+        String serverType = fileConfiguration.getString("server.type");
+        String serverImplementation = fileConfiguration.getString("server.implementation");
+        String serverVersion = fileConfiguration.getString("server.version");
 
         if (cosmicServerTypeArg.isPresent()) {
             serverType = cosmicServerTypeArg.get().split("=")[1];
@@ -174,93 +175,50 @@ public class Main {
     }
 
     /**
-     * Returns the path to the properties file.
+     * Prompts the user for server details.
      *
-     * @return Path to the properties file.
+     * @return YamlConfiguration with the server details.
      */
-    public String getPropertiesFile() {
-        return PROPERTIES_FILE;
-    }
-
-    /**
-     * Returns the properties object.
-     *
-     * @return Properties object.
-     */
-    public Properties getProperties() {
-        return PROPERTIES;
-    }
-
-    /**
-     * Loads properties from the properties file.
-     *
-     * @return Loaded properties.
-     */
-    public Properties loadProperties() {
-        if (PROPERTIES == null) {
-            try {
-                PROPERTIES = new Properties();
-                File file = new File(PROPERTIES_FILE);
-                if (!file.exists()) {
-                    return PROPERTIES;
-                }
-                PROPERTIES.load(new FileInputStream(file));
-            } catch (IOException e) {
-                logger.error("Failed to load properties file: {}", e.getMessage());
-            }
-        }
-        return PROPERTIES;
-    }
-
-    /**
-     * Prompts the user for server details and returns them as properties.
-     *
-     * @return Properties containing server details.
-     */
-    private @NotNull Properties promptUserForServerDetails() {
-        Properties properties = new Properties();
+    private @NotNull YamlConfiguration promptUserForServerDetails() {
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
         try {
-            Terminal terminal = TerminalBuilder.builder().system(true).build();
-            LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
+            if (this.configFile.createNewFile()) {
+                yamlConfiguration = new YamlConfiguration();
+                if (!gui) {
+                    Terminal terminal = TerminalBuilder.builder().system(true).build();
+                    LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
 
-            logger.info("Properties file not found. Please provide the following details:");
-            logger.info("Server Type (e.g., servers): ");
-            String serverType = lineReader.readLine();
-            logger.info("Selected Server Type: {}", serverType);
+                    logger.info("Config file not found. Please provide the following details:");
+                    logger.info("Server Type (e.g., servers): ");
+                    String serverType = lineReader.readLine();
+                    logger.info("Selected Server Type: {}", serverType);
 
-            logger.info("Server Implementation (e.g., spigot): ");
-            String serverImplementation = lineReader.readLine();
-            logger.info("Selected Server Implementation: {}", serverImplementation);
+                    logger.info("Server Implementation (e.g., spigot): ");
+                    String serverImplementation = lineReader.readLine();
+                    logger.info("Selected Server Implementation: {}", serverImplementation);
 
-            logger.info("Server Version (e.g., latest): ");
-            String version = lineReader.readLine();
-            logger.info("Selected Server Version: {}", version);
+                    logger.info("Server Version (e.g., 1.20.4): ");
+                    String version = lineReader.readLine();
+                    logger.info("Selected Server Version: {}", version);
 
-            logger.info("JDK Version (e.g., 17): ");
-            String jdkVersion = lineReader.readLine();
-            logger.info("Selected JDK Version: {}", jdkVersion);
+                    logger.info("JDK Version (e.g., 17): ");
+                    String jdkVersion = lineReader.readLine();
+                    logger.info("Selected JDK Version: {}", jdkVersion);
 
-            properties.setProperty("server.type", serverType);
-            properties.setProperty("server.implementation", serverImplementation);
-            properties.setProperty("server.version", version);
-            properties.setProperty("jdk.version", jdkVersion);
+                    yamlConfiguration.set("server.type", serverType);
+                    yamlConfiguration.set("server.implementation", serverImplementation);
+                    yamlConfiguration.set("server.version", version);
+                    yamlConfiguration.set("server.jdkVersion", jdkVersion);
+                } else {
+                    logger.info("Config file not found. Please set the details using the command config");
+                }
+            }
+
+
         } catch (IOException e) {
             logger.error("Error prompting user for server details: {}", e.getMessage());
         }
-        return properties;
-    }
-
-    /**
-     * Saves properties to the properties file.
-     *
-     * @param properties Properties to be saved.
-     */
-    public void saveProperties(@NotNull Properties properties) {
-        try {
-            properties.store(new FileOutputStream(PROPERTIES_FILE), null);
-        } catch (IOException e) {
-            logger.error("Failed to save properties file: {}", e.getMessage());
-        }
+        return yamlConfiguration;
     }
 
     /**
@@ -297,6 +255,22 @@ public class Main {
      */
     public JDKUtilities getJDKUtilities() {
         return jdkUtilities;
+    }
+
+    public FileConfiguration getConfig() {
+        return this.fileConfiguration;
+    }
+
+    public void saveConfig() {
+        try {
+            this.fileConfiguration.save(this.configFile);
+        } catch (IOException e) {
+            this.logger.error("Error saving centroJars.yml: {}", e.getMessage());
+        }
+    }
+
+    public void reloadConfig() {
+        this.fileConfiguration = YamlConfiguration.loadConfiguration(this.configFile);
     }
 
     public void sendCommand(String[] command) {
@@ -341,20 +315,27 @@ public class Main {
                 }
             }
             case "config" -> {
-                String[] configArguments = Arrays.copyOfRange(command, 1, command.length);
-                if (configArguments.length < 2) {
-                    this.logger.info("Available config properties:");
-                    for (String key : this.getProperties().stringPropertyNames()) {
-                        this.logger.info("{}", key);
-                    }
-                    this.logger.info("Config: {}", this.getProperties().toString());
-                    this.logger.info("Working directory: {}", this.WORKING_DIRECTORY.getAbsolutePath());
-                    this.logger.info("Available config arguments: <key> <value>");
+                String[] args = Arrays.copyOfRange(command, 1, command.length);
+                if (args.length <= 1) {
+                    this.logger.info("Available config arguments: type <type> | implementation <implementation> | version <version> | jdkVersion <jdkVersion>");
                     return;
                 }
-                this.getProperties().setProperty(configArguments[0], configArguments[1]);
-                this.logger.info("Config property '{}' set to '{}'", configArguments[0], configArguments[1]);
-                this.saveProperties(this.getProperties());
+                if (args[0].equalsIgnoreCase("type")) {
+                    this.getConfig().set("server.type", args[1]);
+                    this.logger.info("Server type set to {}", args[1]);
+                } else if (args[0].equalsIgnoreCase("implementation")) {
+                    this.getConfig().set("server.implementation", args[1]);
+                    this.logger.info("Server implementation set to {}", args[1]);
+                } else if (args[0].equalsIgnoreCase("version")) {
+                    this.getConfig().set("server.version", args[1]);
+                    this.logger.info("Server version set to {}", args[1]);
+                } else if (args[0].equalsIgnoreCase("jdkVersion")) {
+                    this.getConfig().set("server.jdkVersion", args[1]);
+                    this.logger.info("JDK version set to {}", args[1]);
+                }
+
+                this.saveConfig();
+
             }
             default -> this.logger.info("Unknown command: {}, type 'help' for help", String.join(" ", command));
         }

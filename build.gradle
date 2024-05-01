@@ -10,9 +10,17 @@ repositories {
     mavenCentral()
     maven { url = "https://logicaldoc.sourceforge.net/maven/" }
     maven { url = "https://repository.liferay.com/nexus/content/repositories/public/" }
+    maven {
+        url = "https://repo.georgev22.com/releases"
+    }
 }
 
 dependencies {
+    implementation 'com.google.guava:guava:33.1.0-jre'
+    implementation 'commons-lang:commons-lang:2.6'
+    implementation "com.georgev22.library:yaml:11.14.0"
+    implementation 'com.formdev:flatlaf:3.4.1'
+    implementation 'com.formdev:flatlaf-intellij-themes:3.4.1'
     implementation 'com.github.oshi:oshi-core:6.6.0'
     implementation 'org.jfree:jfreechart:1.5.4'
     implementation 'org.jetbrains:annotations:24.0.0'

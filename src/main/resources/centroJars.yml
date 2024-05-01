@@ -1,0 +1,7 @@
+server:
+  # Available values: servers, proxies, modded
+  type: "servers"
+  # Available values: purpur, paper, folia, mohist, banner, velocity, bungeecord
+  implementation: "paper"
+  version: "1.20.6"
+  jdkVersion: "21"

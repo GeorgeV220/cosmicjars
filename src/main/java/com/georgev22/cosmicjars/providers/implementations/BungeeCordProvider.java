@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Properties;
 
 public class BungeeCordProvider extends Provider {
 
@@ -45,11 +44,10 @@ public class BungeeCordProvider extends Provider {
                 String fileName = serverImplementation + ".jar";
 
                 String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/";
-                Properties properties = this.main.getProperties();
-                String localPurpurBuild = properties.getProperty("localBuild.bungeeCord", "0");
+                String localPurpurBuild = this.main.getConfig().getString("localBuild.bungeeCord", "0");
                 if (!localPurpurBuild.equals(String.valueOf(bungeeCordInfo.getLatestBuild().getNumber()))) {
-                    properties.setProperty("localBuild.bungeeCord", String.valueOf(bungeeCordInfo.getLatestBuild().getNumber()));
-                    this.main.saveProperties(properties);
+                    this.main.getConfig().set("localBuild.bungeeCord", String.valueOf(bungeeCordInfo.getLatestBuild().getNumber()));
+                    this.main.saveConfig();
                 } else {
                     File file = new File(filePath + fileName);
                     if (file.exists()) {

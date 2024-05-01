@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Properties;
 
 /**
  * Implementation of Provider for downloading server jars from PaperMC.
@@ -58,11 +57,10 @@ public class PaperProvider extends Provider {
                 String fileName = serverVersion + ".jar";
 
                 String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/";
-                Properties properties = this.main.getProperties();
-                String localPurpurBuild = properties.getProperty("localBuild." + serverImplementation, "0");
+                String localPurpurBuild = this.main.getConfig().getString("localBuild." + serverImplementation, "0");
                 if (!localPurpurBuild.equals(String.valueOf(paperInfo.getLatestBuild()))) {
-                    properties.setProperty("localBuild." + serverImplementation, String.valueOf(paperInfo.getLatestBuild()));
-                    this.main.saveProperties(properties);
+                    this.main.getConfig().set("localBuild." + serverImplementation, String.valueOf(paperInfo.getLatestBuild()));
+                    this.main.saveConfig();
                 } else {
                     File file = new File(filePath + fileName);
                     if (file.exists()) {
