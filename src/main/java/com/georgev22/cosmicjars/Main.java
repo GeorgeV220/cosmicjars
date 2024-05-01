@@ -1,5 +1,6 @@
 package com.georgev22.cosmicjars;
 
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubDarkIJTheme;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.providers.*;
 import com.georgev22.cosmicjars.utilities.JDKUtilities;
@@ -59,6 +60,11 @@ public class Main {
     }
 
     public Main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(new FlatGitHubDarkIJTheme());
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize LaF");
+        }
         System.setProperty("log4j.configurationFile", "log4j2.xml");
         instance = this;
         this.jdkUtilities = new JDKUtilities();
