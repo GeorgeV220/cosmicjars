@@ -149,25 +149,43 @@ public class MinecraftServer {
 
             ProcessBuilder pb = new ProcessBuilder(command);
 
-            pb.redirectErrorStream(true);
-            minecraftServerProcess = pb.start();
-            ConsoleFrame.getInstance().addCpuAndMemoryUsage(minecraftServerProcess.pid());
+            if (Main.getInstance().isGUI()) {
+                minecraftServerProcess = pb.start();
+                ConsoleFrame.getInstance().addCpuAndMemoryUsage(minecraftServerProcess.pid());
+            } else {
+                minecraftServerProcess = pb.inheritIO().start();
+            }
 
             serverCommandWriter = new PrintWriter(minecraftServerProcess.getOutputStream());
             InputStream processOutput = minecraftServerProcess.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(processOutput));
 
-            new Thread(() -> {
-                try {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String finalLine = line;
-                        SwingUtilities.invokeLater(() -> ConsoleFrame.getInstance().printToConsole(finalLine));
+            if (Main.getInstance().isGUI()) {
+                new Thread(() -> {
+                    try {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String finalLine = line;
+                            SwingUtilities.invokeLater(() -> ConsoleFrame.getInstance().printToConsole(finalLine));
+                        }
+                    } catch (IOException e) {
+                        this.main.getLogger().error("Error reading Minecraft server output: {}", e.getMessage());
                     }
-                } catch (IOException e) {
-                    this.main.getLogger().error("Error reading Minecraft server output: {}", e.getMessage());
+                }).start();
+            } else {
+                while (minecraftServerProcess.isAlive()) {
+                    try {
+                        int exitCode = minecraftServerProcess.waitFor();
+
+                        if (exitCode != 0) {
+                            this.main.getLogger().info("Minecraft server exited with code: {}", exitCode);
+                        }
+
+                        break;
+                    } catch (InterruptedException ignored) {
+                    }
                 }
-            }).start();
+            }
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (minecraftServerProcess != null && minecraftServerProcess.isAlive()) {
