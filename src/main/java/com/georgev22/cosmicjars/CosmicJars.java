@@ -22,8 +22,8 @@ import java.util.*;
 /**
  * Main class for CosmicJars application.
  */
-public class Main {
-    private static Main instance;
+public class CosmicJars {
+    private static CosmicJars instance;
 
     private final File WORKING_DIRECTORY = new File(".");
     private FileConfiguration fileConfiguration;
@@ -42,12 +42,12 @@ public class Main {
      *
      * @return The singleton instance of the CentersJars application.
      */
-    public static Main getInstance() {
+    public static CosmicJars getInstance() {
         return instance;
     }
 
-    public static void setInstance(Main instance) {
-        Main.instance = instance;
+    public static void setInstance(CosmicJars instance) {
+        CosmicJars.instance = instance;
     }
 
     /**
@@ -56,10 +56,10 @@ public class Main {
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
-        new Main(args);
+        new CosmicJars(args);
     }
 
-    public Main(String[] args) {
+    public CosmicJars(String[] args) {
         try {
             UIManager.setLookAndFeel(new FlatGitHubDarkIJTheme());
         } catch (Exception ex) {

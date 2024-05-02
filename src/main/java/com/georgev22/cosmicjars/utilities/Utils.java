@@ -1,6 +1,6 @@
 package com.georgev22.cosmicjars.utilities;
 
-import com.georgev22.cosmicjars.Main;
+import com.georgev22.cosmicjars.CosmicJars;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -49,7 +49,7 @@ public class Utils {
     public static @NotNull String downloadFile(String apiUrl, String filePath, String fileName) throws IOException {
         File outputFile = new File(filePath + fileName);
         if (outputFile.getParentFile().mkdirs()) {
-            Main.getInstance().getLogger().info("Created directory: {}", filePath);
+            CosmicJars.getInstance().getLogger().info("Created directory: {}", filePath);
         }
 
         HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
@@ -79,13 +79,13 @@ public class Utils {
 
                     String progressBar = Utils.getProgressBar(progress);
 
-                    Main.getInstance().getLogger().info("\rDownloading... {}  Speed: {} KB/s  Time left: {} seconds",
+                    CosmicJars.getInstance().getLogger().info("\rDownloading... {}  Speed: {} KB/s  Time left: {} seconds",
                             progressBar, String.format("%.2f", speed / 1024), String.format("%.2f", timeLeft));
                 }
             }
         }
 
-        Main.getInstance().getLogger().info("File downloaded successfully: {}", outputFile.getAbsolutePath());
+        CosmicJars.getInstance().getLogger().info("File downloaded successfully: {}", outputFile.getAbsolutePath());
         return outputFile.getAbsolutePath();
     }
 

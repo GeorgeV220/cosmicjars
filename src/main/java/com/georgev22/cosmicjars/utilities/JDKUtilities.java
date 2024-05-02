@@ -1,6 +1,6 @@
 package com.georgev22.cosmicjars.utilities;
 
-import com.georgev22.cosmicjars.Main;
+import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.helpers.Platform;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -20,7 +20,7 @@ import java.util.zip.ZipFile;
 
 public class JDKUtilities {
 
-    private final Main main = Main.getInstance();
+    private final CosmicJars main = CosmicJars.getInstance();
 
     /**
      * Retrieves the version of the Java runtime.

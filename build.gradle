@@ -8,26 +8,27 @@ version = '1.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    maven { url = "https://logicaldoc.sourceforge.net/maven/" }
-    maven { url = "https://repository.liferay.com/nexus/content/repositories/public/" }
     maven {
         url = "https://repo.georgev22.com/releases"
     }
 }
 
 dependencies {
-    implementation 'com.google.guava:guava:33.1.0-jre'
-    implementation 'commons-lang:commons-lang:2.6'
+    implementation 'com.georgev22:libraryloader:1.12.0'
     implementation "com.georgev22.library:yaml:11.14.0"
     implementation 'com.formdev:flatlaf:3.4.1'
     implementation 'com.formdev:flatlaf-intellij-themes:3.4.1'
-    implementation 'com.github.oshi:oshi-core:6.6.0'
-    implementation 'org.jfree:jfreechart:1.5.4'
     implementation 'org.jetbrains:annotations:24.0.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.23.1'
     implementation 'org.jline:jline:3.25.1'
-    implementation 'com.google.code.gson:gson:2.10.1'
+
+    compileOnly 'org.apache.commons:commons-compress:1.26.1'
+    compileOnly 'com.google.guava:guava:33.1.0-jre'
+    compileOnly 'commons-lang:commons-lang:2.6'
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+    compileOnly 'com.github.oshi:oshi-core:6.6.0'
+    compileOnly 'org.jfree:jfreechart:1.5.4'
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

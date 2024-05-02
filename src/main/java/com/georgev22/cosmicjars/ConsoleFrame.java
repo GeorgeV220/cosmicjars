@@ -31,7 +31,7 @@ public class ConsoleFrame extends JFrame {
     private final JPanel infoPanel = new JPanel();
     private static ConsoleFrame instance;
     private final List<Long> processIds = new ArrayList<>();
-    private final Main main = Main.getInstance();
+    private final CosmicJars main = CosmicJars.getInstance();
 
     public static ConsoleFrame getInstance() {
         return instance;
@@ -123,7 +123,7 @@ public class ConsoleFrame extends JFrame {
                     totalCpuUsage += process.getProcessCpuLoadCumulative();
                     totalMemoryUsage += process.getResidentSetSize();
                 } catch (Exception ex) {
-                    Main.getInstance().getLogger().error("Error getting process CPU usage: {}", ex.getMessage());
+                    CosmicJars.getInstance().getLogger().error("Error getting process CPU usage: {}", ex.getMessage());
                     ((Timer) e.getSource()).stop();
                     break;
                 }

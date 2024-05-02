@@ -4,7 +4,7 @@
 package com.georgev22.cosmicjars.helpers;
 
 import com.georgev22.cosmicjars.ConsoleFrame;
-import com.georgev22.cosmicjars.Main;
+import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.utilities.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class MinecraftServer {
 
-    private final Main main = Main.getInstance();
+    private final CosmicJars main = CosmicJars.getInstance();
     private final Provider provider;
     private final File workDir;
     private @Nullable File jarFile;
@@ -149,7 +149,7 @@ public class MinecraftServer {
 
             ProcessBuilder pb = new ProcessBuilder(command);
 
-            if (Main.getInstance().isGUI()) {
+            if (CosmicJars.getInstance().isGUI()) {
                 minecraftServerProcess = pb.start();
                 ConsoleFrame.getInstance().addCpuAndMemoryUsage(minecraftServerProcess.pid());
             } else {
@@ -160,7 +160,7 @@ public class MinecraftServer {
             InputStream processOutput = minecraftServerProcess.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(processOutput));
 
-            if (Main.getInstance().isGUI()) {
+            if (CosmicJars.getInstance().isGUI()) {
                 new Thread(() -> {
                     try {
                         String line;

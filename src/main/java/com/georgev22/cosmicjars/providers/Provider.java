@@ -1,6 +1,6 @@
 package com.georgev22.cosmicjars.providers;
 
-import com.georgev22.cosmicjars.Main;
+import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.providers.implementations.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +12,7 @@ public abstract class Provider {
     /**
      * Main instance of the application.
      */
-    protected final Main main = Main.getInstance();
+    protected final CosmicJars main = CosmicJars.getInstance();
 
     /**
      * Type of the server (e.g., Bukkit, Spigot).
