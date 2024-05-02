@@ -1,6 +1,11 @@
 package com.georgev22.cosmicjars.utilities;
 
 import com.georgev22.cosmicjars.Main;
+import com.georgev22.cosmicjars.helpers.Platform;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,13 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class JDKUtilities {
 
     private final Main main = Main.getInstance();
-    private final String ADOPT_OPENJDK_URL_TEMPLATE = "https://api.adoptopenjdk.net/v3/binary/latest/%s/ga/%s/%s/jdk/hotspot/normal/adoptopenjdk";
 
     /**
      * Retrieves the version of the Java runtime.
@@ -72,8 +77,20 @@ public class JDKUtilities {
      * @return The path to the downloaded JDK
      */
     public File downloadJDK(String version) {
-        String url = String.format(ADOPT_OPENJDK_URL_TEMPLATE, version, this.getPlatform(), this.getArchitecture());
-        String fileName = String.format("jdk-%s.zip", version);
+        Platform.OS currentOS = Platform.getCurrentOS();
+        String url = String.format(
+                "https://api.adoptopenjdk.net/v3/binary/latest/%s/ga/%s/%s/jdk/hotspot/normal/adoptopenjdk",
+                version,
+                currentOS.getOS(),
+                this.getArchitecture()
+        );
+        String fileName = String.format(
+                currentOS.equals(Platform.OS.LINUX)
+                        ? "jdk-%s-linux-%s.tar.gz"
+                        : "jdk-%s-%s.zip",
+                currentOS.getOS(),
+                version
+        );
         File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), version);
         String outputPath = jdkDir.getAbsolutePath() + "/";
 
@@ -82,12 +99,16 @@ public class JDKUtilities {
             Files.createDirectories(directory);
 
             String downloadedFilePath = Utils.downloadFile(url, outputPath, fileName);
+            if (currentOS.equals(Platform.OS.WINDOWS)) {
+                extractFirstFolderFromZip(downloadedFilePath, outputPath);
+            } else {
+                extractFirstFolderFromTarGz(downloadedFilePath, outputPath);
+            }
 
-            extractFirstFolderFromZip(downloadedFilePath, outputPath);
 
             this.main.getLogger().info("JDK {} downloaded successfully to: {}", version, outputPath);
             return new File(outputPath);
-        } catch (IOException e) {
+        } catch (IOException | ArchiveException e) {
             this.main.getLogger().log(Level.ERROR, "Failed to download JDK {}: {}", version, e.getMessage(), e);
         }
         return null;
@@ -131,20 +152,47 @@ public class JDKUtilities {
     }
 
     /**
-     * Returns the platform name based on the current operating system.
+     * Extracts the contents of the first folder from a tar.gz file
      *
-     * @return The platform name
+     * @param tarGzFilePath tar.gz file path
+     * @param outputPath    output path
+     * @throws IOException if an I/O error occurs
      */
-    public String getPlatform() {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            return "windows";
-        } else if (os.contains("mac")) {
-            return "mac";
-        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            return "linux";
-        } else {
-            throw new IllegalStateException("Unknown OS: " + os);
+    private void extractFirstFolderFromTarGz(String tarGzFilePath, String outputPath) throws IOException, ArchiveException {
+        try (FileInputStream fis = new FileInputStream(tarGzFilePath);
+             GZIPInputStream gzis = new GZIPInputStream(fis);
+             TarArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream(ArchiveStreamFactory.TAR, gzis)) {
+
+            ArchiveEntry entry;
+            String firstFolderName = null;
+            while ((entry = ais.getNextEntry()) != null) {
+                if (entry.isDirectory()) {
+                    String entryName = entry.getName();
+                    if (firstFolderName == null) {
+                        firstFolderName = entryName;
+                    } else if (!entryName.startsWith(firstFolderName)) {
+                        break;
+                    }
+                }
+            }
+
+            if (firstFolderName != null) {
+                TarArchiveInputStream aisAgain = new ArchiveStreamFactory().createArchiveInputStream(
+                        ArchiveStreamFactory.TAR, new GZIPInputStream(new FileInputStream(tarGzFilePath)));
+                while ((entry = aisAgain.getNextEntry()) != null) {
+                    if (!entry.isDirectory() && entry.getName().startsWith(firstFolderName)) {
+                        Path destPath = Paths.get(outputPath, entry.getName().substring(firstFolderName.length()));
+                        Files.createDirectories(destPath.getParent());
+                        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destPath.toFile()))) {
+                            byte[] buffer = new byte[1024];
+                            int len;
+                            while ((len = aisAgain.read(buffer)) > 0) {
+                                bos.write(buffer, 0, len);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
