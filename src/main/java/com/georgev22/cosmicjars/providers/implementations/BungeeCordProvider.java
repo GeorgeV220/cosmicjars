@@ -13,8 +13,6 @@ import java.net.URL;
 
 public class BungeeCordProvider extends Provider {
 
-    private final String API_BASE_URL = "https://ci.md-5.net/job/BungeeCord/api/json";
-
     /**
      * Constructs a new Provider with the specified server type, implementation, and version.
      *
@@ -28,9 +26,10 @@ public class BungeeCordProvider extends Provider {
 
     @Override
     public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        this.main.getLogger().info("Fetching BungeeCord builds from {}", this.API_BASE_URL);
+        String API_BASE_URL = "https://ci.md-5.net/job/BungeeCord/api/json";
+        this.main.getLogger().info("Fetching BungeeCord builds from {}", API_BASE_URL);
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(this.API_BASE_URL).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(API_BASE_URL).openConnection();
 
             connection.setRequestMethod("GET");
             int connectionResponseCode = connection.getResponseCode();

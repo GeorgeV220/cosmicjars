@@ -17,11 +17,6 @@ import java.net.URL;
 public class MohistProvider extends Provider {
 
     /**
-     * Base URL of the MohistMC API for retrieving builds.
-     */
-    private final String API_BASE_URL = "https://mohistmc.com/api/v2/projects/%s/%s/builds/";
-
-    /**
      * Constructs a new MohistProvider with the specified server type, implementation, and version.
      *
      * @param serverType           Type of the server.
@@ -42,7 +37,7 @@ public class MohistProvider extends Provider {
      */
     @Override
     public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        String mohistAPI = String.format(API_BASE_URL, serverImplementation, serverVersion);
+        String mohistAPI = String.format("https://mohistmc.com/api/v2/projects/%s/%s/builds/", serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching Mohist link: {}", mohistAPI);
         try {
             URL mohistBuildsURL = new URL(mohistAPI);

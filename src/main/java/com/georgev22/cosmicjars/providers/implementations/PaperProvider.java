@@ -17,11 +17,6 @@ import java.net.URL;
 public class PaperProvider extends Provider {
 
     /**
-     * Base URL of the PaperMC API for retrieving versions.
-     */
-    private final String API_BASE_URL = "https://papermc.io/api/v2/projects/%s/versions/";
-
-    /**
      * Constructs a new PaperProvider with the specified server type, implementation, and version.
      *
      * @param serverType           Type of the server.
@@ -42,7 +37,7 @@ public class PaperProvider extends Provider {
      */
     @Override
     public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        String paperAPI = String.format(API_BASE_URL, serverImplementation) + serverVersion + "/";
+        String paperAPI = String.format("https://api.papermc.io/v2/projects/%s/versions/%s/", serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching Paper link: {}", paperAPI);
         try {
             URL paperBuildsURL = new URL(paperAPI);

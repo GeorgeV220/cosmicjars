@@ -17,11 +17,6 @@ import java.net.URL;
 public class PurpurProvider extends Provider {
 
     /**
-     * Base URL of the PurpurMC API for retrieving versions.
-     */
-    private final String API_BASE_URL = "https://api.purpurmc.org/v2/purpur/";
-
-    /**
      * Constructs a new PurpurProvider with the specified server type, implementation, and version.
      *
      * @param serverType           Type of the server.
@@ -42,7 +37,7 @@ public class PurpurProvider extends Provider {
      */
     @Override
     public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        String purpurAPI = API_BASE_URL + serverVersion + "/";
+        String purpurAPI = String.format("https://api.purpurmc.org/v2/purpur/%s/", serverVersion);
         this.main.getLogger().debug("Fetching Purpur link: {}", purpurAPI);
         try {
             URL purpurBuildsURL = new URL(purpurAPI);

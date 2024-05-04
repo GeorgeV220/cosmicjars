@@ -13,11 +13,6 @@ import java.net.URL;
 public class CentroJarProvider extends Provider {
 
     /**
-     * Base URL of the CentroJars API.
-     */
-    private final String API_BASE_URL = "https://centrojars.com/api/";
-
-    /**
      * Constructs a new CentroJarProvider with the specified server type, implementation, and version.
      *
      * @param serverType           Type of the server.
@@ -38,7 +33,7 @@ public class CentroJarProvider extends Provider {
      */
     @Override
     public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        String apiUrl = API_BASE_URL + "fetchJar/" + serverType + "/" + serverImplementation + "/" + serverVersion + ".jar";
+        String apiUrl = String.format("https://centrojars.com/api/fetchJar/%s/%s/%s.jar", serverType, serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching jar: {}", apiUrl);
         try {
             URL url = new URL(apiUrl);
