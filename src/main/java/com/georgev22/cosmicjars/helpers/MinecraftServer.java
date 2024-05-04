@@ -3,7 +3,7 @@
  */
 package com.georgev22.cosmicjars.helpers;
 
-import com.georgev22.cosmicjars.ConsoleFrame;
+import com.georgev22.cosmicjars.CosmicJarsFrame;
 import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.utilities.Utils;
@@ -151,7 +151,7 @@ public class MinecraftServer {
 
             if (CosmicJars.getInstance().isGUI()) {
                 minecraftServerProcess = pb.start();
-                ConsoleFrame.getInstance().addCpuAndMemoryUsage(minecraftServerProcess.pid());
+                CosmicJarsFrame.getInstance().addCpuAndMemoryUsage(minecraftServerProcess.pid());
             } else {
                 minecraftServerProcess = pb.inheritIO().start();
             }
@@ -166,7 +166,7 @@ public class MinecraftServer {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             String finalLine = line;
-                            SwingUtilities.invokeLater(() -> ConsoleFrame.getInstance().printToConsole(finalLine));
+                            SwingUtilities.invokeLater(() -> CosmicJarsFrame.getInstance().printToConsole(finalLine));
                         }
                     } catch (IOException e) {
                         this.main.getLogger().error("Error reading Minecraft server output: {}", e.getMessage());

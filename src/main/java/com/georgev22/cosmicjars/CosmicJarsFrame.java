@@ -1,5 +1,6 @@
 package com.georgev22.cosmicjars;
 
+import com.georgev22.cosmicjars.gui.HistoryTextField;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -12,36 +13,33 @@ import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
 
-public class ConsoleFrame extends JFrame {
+public class CosmicJarsFrame extends JFrame {
     private final JTextPane consoleTextPane;
-    private final JTextField commandTextField;
+    private final HistoryTextField commandTextField;
     private final JTextArea infoPanelTextArea;
-    private final JPanel infoPanel = new JPanel();
-    private static ConsoleFrame instance;
+    private static CosmicJarsFrame instance;
     private final List<Long> processIds = new ArrayList<>();
     private final CosmicJars main = CosmicJars.getInstance();
 
-    public static ConsoleFrame getInstance() {
+    public static CosmicJarsFrame getInstance() {
         return instance;
     }
 
-    public ConsoleFrame() {
+    public CosmicJarsFrame() {
         instance = this;
         setTitle("CosmicJars");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1400, 600);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -50,12 +48,13 @@ public class ConsoleFrame extends JFrame {
         consoleTextPane.setEditable(false);
         consoleTextPane.setBackground(Color.BLACK);
         consoleTextPane.setForeground(Color.WHITE);
+        consoleTextPane.setFont(new Font("Roboto Mono", Font.PLAIN, 16));
         JScrollPane consoleScrollPane = new JScrollPane(consoleTextPane);
         consolePanel.add(consoleScrollPane, BorderLayout.CENTER);
         mainPanel.add(consolePanel, BorderLayout.CENTER);
 
         JPanel commandPanel = new JPanel(new BorderLayout());
-        commandTextField = new JTextField();
+        commandTextField = new HistoryTextField();
         JButton sendButton = new JButton("Send");
         Action action = new AbstractAction("send") {
             @Override
@@ -79,10 +78,10 @@ public class ConsoleFrame extends JFrame {
         commandPanel.add(sendButton, BorderLayout.EAST);
         mainPanel.add(commandPanel, BorderLayout.SOUTH);
 
+        JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanelTextArea = new JTextArea();
         infoPanelTextArea.setEditable(false);
-        JScrollPane infoScrollPane = new JScrollPane(infoPanelTextArea);
         infoPanel.add(new JLabel("Info"));
         mainPanel.add(infoPanel, BorderLayout.EAST);
 
@@ -99,6 +98,8 @@ public class ConsoleFrame extends JFrame {
         SystemInfo sysInfo = new SystemInfo();
         OperatingSystem os = sysInfo.getOperatingSystem();
 
+        StandardChartTheme darkTheme = getStandardChartTheme(mainPanel);
+        ChartFactory.setChartTheme(darkTheme);
         DefaultCategoryDataset cpuDataset = new DefaultCategoryDataset();
         JFreeChart cpuChart = createChart("CPU Usage", "Time", "Usage (%)", cpuDataset);
         ChartPanel cpuChartPanel = createChartPanel(cpuChart);
@@ -152,6 +153,23 @@ public class ConsoleFrame extends JFrame {
         infoPanel.add(memoryUsageLabel);
         infoPanel.add(memoryChartPanel);
         setVisible(true);
+    }
+
+    private static @NotNull StandardChartTheme getStandardChartTheme(@NotNull JPanel mainPanel) {
+        StandardChartTheme darkTheme = new StandardChartTheme("Dark Theme");
+        darkTheme.setAxisLabelPaint(mainPanel.getForeground());
+        darkTheme.setItemLabelPaint(mainPanel.getForeground());
+        darkTheme.setTickLabelPaint(mainPanel.getForeground());
+        darkTheme.setTitlePaint(mainPanel.getForeground());
+        darkTheme.setSubtitlePaint(mainPanel.getForeground());
+        darkTheme.setLegendBackgroundPaint(mainPanel.getBackground());
+        darkTheme.setLegendItemPaint(mainPanel.getForeground());
+        darkTheme.setPlotBackgroundPaint(mainPanel.getBackground());
+        darkTheme.setChartBackgroundPaint(mainPanel.getBackground());
+        darkTheme.setDomainGridlinePaint(mainPanel.getForeground());
+        darkTheme.setRangeGridlinePaint(mainPanel.getForeground());
+        darkTheme.setRegularFont(mainPanel.getFont());
+        return darkTheme;
     }
 
     /**

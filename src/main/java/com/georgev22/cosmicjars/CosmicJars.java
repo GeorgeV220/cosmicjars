@@ -74,7 +74,7 @@ public class CosmicJars {
         this.gui = guiArg.isPresent() && guiArg.get().equals("--cosmicgui");
         if (gui) {
             SwingUtilities.invokeLater(() -> {
-                ConsoleFrame frame = new ConsoleFrame();
+                CosmicJarsFrame frame = new CosmicJarsFrame();
                 frame.setVisible(true);
             });
         }
