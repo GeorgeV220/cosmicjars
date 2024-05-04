@@ -43,7 +43,7 @@ dependencies {
     compileOnly "com.georgev22.library:yaml:11.14.0"
     compileOnly 'com.formdev:flatlaf:3.4.1'
     compileOnly 'com.formdev:flatlaf-intellij-themes:3.4.1'
-    compileOnly 'org.jetbrains:annotations:24.0.0'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.23.1'
     compileOnly 'org.apache.logging.log4j:log4j-api:2.23.1'
     compileOnly 'org.jline:jline:3.25.1'
