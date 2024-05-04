@@ -1,5 +1,7 @@
 # CosmicJars
 
+Version: 1.0.0
+
 CosmicJars is a powerful tool crafted to simplify the management of your Minecraft server by seamlessly handling the
 download and update process of server jars. It ensures that your server software stays current with the latest versions
 and builds, supporting popular variants like Paper, Folia, Purpur, Mohist, and Banner.

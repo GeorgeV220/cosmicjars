@@ -3,8 +3,23 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-group = 'com.georgev22'
-version = '1.1-SNAPSHOT'
+
+apply from: "$rootDir/gradle/publish.gradle"
+
+if (project.hasProperty("local_script")) {
+    apply from: file(local_script + "/build.local.gradle")
+}
+
+def gradleLocalProperties = new Properties()
+
+try {
+    gradleLocalProperties.load(new FileInputStream(rootProject.file("gradle-local.properties")))
+} catch (FileNotFoundException ignored) {
+    println("gradle-local.properties not found. Setting default values.")
+}
+
+group project.property("group")
+version project.property("version")
 
 repositories {
     mavenCentral()
@@ -42,6 +57,9 @@ shadowJar {
     archiveVersion.set('')
 }
 
+tasks.build.dependsOn(shadowJar)
+tasks.publish.dependsOn(shadowJar)
+
 test {
     useJUnitPlatform()
 }
@@ -57,3 +75,5 @@ jar {
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
+
+defaultTasks 'build'
