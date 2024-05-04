@@ -13,7 +13,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -63,6 +66,24 @@ public class JDKUtilities {
             this.main.getLogger().error("We could not find your java executable inside '{}' - Using command 'java' instead", binDir.getAbsolutePath());
 
             return "java";
+        }
+
+        if (Platform.getCurrentOS().equals(Platform.OS.LINUX)) {
+            Set<PosixFilePermission> permissions = new HashSet<>();
+            permissions.add(PosixFilePermission.OWNER_EXECUTE);
+            permissions.add(PosixFilePermission.GROUP_EXECUTE);
+            permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+            permissions.add(PosixFilePermission.OWNER_WRITE);
+            permissions.add(PosixFilePermission.GROUP_WRITE);
+            permissions.add(PosixFilePermission.OTHERS_WRITE);
+            permissions.add(PosixFilePermission.OWNER_READ);
+            permissions.add(PosixFilePermission.GROUP_READ);
+            permissions.add(PosixFilePermission.OTHERS_READ);
+            try {
+                Files.setPosixFilePermissions(javaExe.toPath(), permissions);
+            } catch (IOException e) {
+                this.main.getLogger().error("Failed to set permissions on java executable: {}", e.getMessage());
+            }
         }
 
         this.main.getLogger().info("Java executable found: {}", javaExe.getAbsolutePath());
