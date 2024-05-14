@@ -1,6 +1,7 @@
 package com.georgev22.cosmicjars;
 
 import com.georgev22.cosmicjars.gui.HistoryTextField;
+import com.georgev22.cosmicjars.gui.SmartScroller;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -44,13 +45,14 @@ public class CosmicJarsFrame extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         JPanel consolePanel = new JPanel(new BorderLayout());
-        consoleTextPane = new JTextPane();
+        JTextPane consoleTextPane = new JTextPane();
         consoleTextPane.setEditable(false);
         consoleTextPane.setBackground(Color.BLACK);
         consoleTextPane.setForeground(Color.WHITE);
         consoleTextPane.setFont(new Font("Roboto Mono", Font.PLAIN, 16));
         JScrollPane consoleScrollPane = new JScrollPane(consoleTextPane);
         consolePanel.add(consoleScrollPane, BorderLayout.CENTER);
+        new SmartScroller(consoleScrollPane);
         mainPanel.add(consolePanel, BorderLayout.CENTER);
 
         JPanel commandPanel = new JPanel(new BorderLayout());
@@ -191,7 +193,7 @@ public class CosmicJarsFrame extends JFrame {
      * @return A JFreeChart object representing the line chart.
      */
     @Contract("_, _, _, _ -> new")
-    private @NotNull JFreeChart createChart(String title, String xAxisLabel, String yAxisLabel, DefaultCategoryDataset dataset) {
+    private @NotNull JFreeChart createChart(String title, @SuppressWarnings("SameParameterValue") String xAxisLabel, String yAxisLabel, DefaultCategoryDataset dataset) {
         return ChartFactory.createLineChart(title, xAxisLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, true, true, false);
     }
 
