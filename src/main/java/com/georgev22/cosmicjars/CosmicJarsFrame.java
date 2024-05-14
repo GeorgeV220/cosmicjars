@@ -3,7 +3,7 @@ package com.georgev22.cosmicjars;
 import com.georgev22.cosmicjars.gui.HistoryTextField;
 import com.georgev22.cosmicjars.gui.SmartScroller;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
-import org.apache.logging.log4j.Logger;
+import com.georgev22.cosmicjars.utilities.ConsoleOutputHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jfree.chart.*;
@@ -15,17 +15,16 @@ import oshi.software.os.OperatingSystem;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.List;
 
 public class CosmicJarsFrame extends JFrame {
-    private final JTextPane consoleTextPane;
+    private final ConsoleOutputHandler outputHandler;
     private final HistoryTextField commandTextField;
     private final JTextArea infoPanelTextArea;
     private static CosmicJarsFrame instance;
@@ -89,7 +88,10 @@ public class CosmicJarsFrame extends JFrame {
 
         getContentPane().add(mainPanel);
 
-        PrintStream consolePrintStream = new PrintStream(new ConsoleOutputStream(consoleTextPane, this.main.getLogger()));
+        outputHandler = new ConsoleOutputHandler(consoleTextPane, main.getLogger());
+        Runtime.getRuntime().addShutdownHook(new Thread(outputHandler::stop));
+        PrintStream consolePrintStream = new PrintStream(outputHandler);
+        new Thread(outputHandler).start();
         System.setOut(consolePrintStream);
         System.setErr(consolePrintStream);
 
@@ -210,33 +212,11 @@ public class CosmicJarsFrame extends JFrame {
     }
 
     public void printToConsole(String text) {
-        consoleTextPane.setText(consoleTextPane.getText() + text + "\n");
+        outputHandler.addToQueue(text + "\n");
     }
 
     public void addToInfoPanel(String text) {
         infoPanelTextArea.append(text + "\n");
-    }
-
-    private static class ConsoleOutputStream extends OutputStream {
-        private final JTextPane textPane;
-        private final Logger logger;
-
-        public ConsoleOutputStream(JTextPane textPane, Logger logger) {
-            this.textPane = textPane;
-            this.logger = logger;
-        }
-
-        @Override
-        public void write(int b) {
-            StyledDocument doc = textPane.getStyledDocument();
-            Style style = textPane.addStyle("Style", null);
-
-            try {
-                doc.insertString(doc.getLength(), String.valueOf((char) b), style);
-            } catch (BadLocationException e) {
-                logger.error("Error writing to console: {}", e.getMessage());
-            }
-        }
     }
 
 }
