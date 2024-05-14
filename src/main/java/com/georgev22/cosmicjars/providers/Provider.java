@@ -117,6 +117,7 @@ public abstract class Provider {
             };
             case "modded" -> switch (serverImplementation) {
                 case "mohist", "banner" -> new MohistProvider(serverType, serverImplementation, serverVersion);
+                case "fabric" -> new FabricProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
             };
             case "proxies" -> switch (serverImplementation) {
