@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.0.0...v1.1.0) (2024-05-14)
+
+
+### Bug Fixes
+
+* handle console output in CosmicJarsFrame ([594bf2d](https://github.com/GeorgeV220/cosmicjars/commit/594bf2d4cc3ce778027d467b087a9eb83310132f))
+
+
+### Features
+
+* Add ConsoleOutputHandler ([0b1438c](https://github.com/GeorgeV220/cosmicjars/commit/0b1438cb1d120c2975f8a55284998788307f65b4))
+* **gui:** add SmartScroller class ([fd138c3](https://github.com/GeorgeV220/cosmicjars/commit/fd138c3b9e40f669b0be775a57cd4f1d708fc3c0))
+* **gui:** add SmartScroller for console text pane ([6f4bf4f](https://github.com/GeorgeV220/cosmicjars/commit/6f4bf4f65c1b08238dc72ceb213aeac4dfd0b23c))
+* **provider:** add FabricProvider implementation ([c53d2ca](https://github.com/GeorgeV220/cosmicjars/commit/c53d2ca67fdc0b4729541e549ae8cc52c4005efa))
+
 # 1.0.0 (2024-05-04)
 
 
