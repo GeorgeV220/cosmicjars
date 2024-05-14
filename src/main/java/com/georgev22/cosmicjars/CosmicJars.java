@@ -28,7 +28,6 @@ public class CosmicJars {
     private final File WORKING_DIRECTORY = new File(".");
     private FileConfiguration fileConfiguration;
     private final File configFile;
-    private final String COSMIC_JARS_FOLDER = "./cosmicJars/";
     private final Logger logger;
     private final boolean gui;
     private final String[] programArguments;
@@ -73,10 +72,7 @@ public class CosmicJars {
         Optional<String> guiArg = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmicgui")).findFirst();
         this.gui = guiArg.isPresent() && guiArg.get().equals("--cosmicgui");
         if (gui) {
-            SwingUtilities.invokeLater(() -> {
-                CosmicJarsFrame frame = new CosmicJarsFrame();
-                frame.setVisible(true);
-            });
+            SwingUtilities.invokeLater(CosmicJarsFrame::new);
         }
         this.logger = LogManager.getLogger("CosmicJars");
         logger.info("CosmicJars starting...");
@@ -173,7 +169,7 @@ public class CosmicJars {
      * @return Path to the CosmicJars folder.
      */
     public String getCosmicJarsFolder() {
-        return COSMIC_JARS_FOLDER;
+        return "./cosmicJars/";
     }
 
     public File getWorkDir() {
