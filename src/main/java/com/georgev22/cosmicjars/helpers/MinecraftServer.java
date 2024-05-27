@@ -48,6 +48,8 @@ public class MinecraftServer {
     ) {
         this.provider = provider;
         this.workDir = workDir;
+        // We ignore if the `provider.downloadJar()` is null because we have another check in #start()
+        // noinspection DataFlowIssue
         File jarFile = new File(provider.downloadJar());
         if (jarFile.exists()) {
             this.jarFile = jarFile;
