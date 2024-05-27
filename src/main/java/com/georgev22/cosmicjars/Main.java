@@ -3,10 +3,13 @@ package com.georgev22.cosmicjars;
 import com.georgev22.cosmicjars.annotations.MavenLibrary;
 import com.georgev22.cosmicjars.annotations.Repository;
 import com.georgev22.cosmicjars.utilities.LibraryLoader;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 @Repository(repoName = "central", repoURL = "https://repo.maven.apache.org/maven2/")
@@ -28,7 +31,31 @@ import java.util.logging.Logger;
 public class Main {
 
     public static void main(String[] args) {
+        try (InputStream stream = Main.class.getResourceAsStream("/logging.properties")) {
+            if (stream == null) {
+                throw new RuntimeException("Cannot find logging.properties file");
+            }
+            LogManager.getLogManager().readConfiguration(stream);
+        } catch (Exception e) {
+            throw new RuntimeException("Error loading logging.properties file", e);
+        }
+
+        // Load dependencies
         Repository[] repositories = Main.class.getAnnotationsByType(Repository.class);
+        List<LibraryLoader.CosmicDependency> dependencies = getCosmicDependencies();
+
+        LibraryLoader libraryLoader = new LibraryLoader(
+                Logger.getGlobal(),
+                Arrays.stream(repositories).toList()
+        );
+
+        libraryLoader.load(dependencies);
+
+        CosmicJars.main(args);
+
+    }
+
+    private static @NotNull List<LibraryLoader.CosmicDependency> getCosmicDependencies() {
         MavenLibrary[] libs = Main.class.getDeclaredAnnotationsByType(MavenLibrary.class);
         List<LibraryLoader.CosmicDependency> dependencies = new ArrayList<>();
 
@@ -44,16 +71,7 @@ public class Main {
                 dependencies.add(new LibraryLoader.CosmicDependency(dependency[0], dependency[1], dependency[2]));
             }
         }
-
-        LibraryLoader libraryLoader = new LibraryLoader(
-                Logger.getGlobal(),
-                Arrays.stream(repositories).toList()
-        );
-
-        libraryLoader.load(dependencies);
-
-        CosmicJars.main(args);
-
+        return dependencies;
     }
 
 }
