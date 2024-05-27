@@ -2,6 +2,7 @@ package com.georgev22.cosmicjars.providers.implementations;
 
 import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.utilities.Utils;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -21,6 +22,9 @@ public class CentroJarProvider extends Provider {
      */
     public CentroJarProvider(String serverType, String serverImplementation, String serverVersion) {
         super(serverType, serverImplementation, serverVersion);
+        this.main.getLogger().warn("CentroJars may provide outdated server jars.");
+        this.main.getLogger().warn("It is not possible to save latest build number from CentroJars.");
+        this.main.getLogger().warn("Please use another provider if possible or implement your own. (https://github.com/GeorgeV220/CosmicJars/)");
     }
 
     /**
@@ -32,7 +36,7 @@ public class CentroJarProvider extends Provider {
      * @return The path to the server jar.
      */
     @Override
-    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+    public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         String apiUrl = String.format("https://centrojars.com/api/fetchJar/%s/%s/%s.jar", serverType, serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching jar: {}", apiUrl);
         try {

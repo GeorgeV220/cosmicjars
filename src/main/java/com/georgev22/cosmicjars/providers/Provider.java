@@ -3,6 +3,7 @@ package com.georgev22.cosmicjars.providers;
 import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.providers.implementations.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstract class representing a provider for downloading server jars.
@@ -76,7 +77,7 @@ public abstract class Provider {
      * @return The path to the server jar.
      * @see #downloadJar(String, String, String)
      */
-    public String downloadJar() {
+    public @Nullable String downloadJar() {
         return this.downloadJar(this.getServerType(), this.getServerImplementation(), this.getServerVersion());
     }
 
@@ -88,7 +89,7 @@ public abstract class Provider {
      * @param serverVersion        Version of the server.
      * @return The path to the server jar.
      */
-    public abstract String downloadJar(String serverType, String serverImplementation, String serverVersion);
+    public abstract @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion);
 
     /**
      * Retrieves information about the server.

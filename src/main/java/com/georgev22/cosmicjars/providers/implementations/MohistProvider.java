@@ -4,6 +4,7 @@ import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.providers.info.MohistInfo;
 import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class MohistProvider extends Provider {
      * @return The path to the server jar.
      */
     @Override
-    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+    public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         String mohistAPI = String.format("https://mohistmc.com/api/v2/projects/%s/%s/builds/", serverImplementation, serverVersion);
         this.main.getLogger().debug("Fetching Mohist link: {}", mohistAPI);
         try {

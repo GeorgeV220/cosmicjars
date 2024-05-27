@@ -6,6 +6,7 @@ import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class FabricProvider extends Provider {
      * @return The path to the server jar.
      */
     @Override
-    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+    public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         String API_URL = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar";
         try {
             String latestStableLoader = this.getStableLoaders().get(0).getVersion();

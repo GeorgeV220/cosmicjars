@@ -4,6 +4,7 @@ import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.providers.info.PurpurInfo;
 import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class PurpurProvider extends Provider {
      * @return The path to the server jar.
      */
     @Override
-    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+    public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         String purpurAPI = String.format("https://api.purpurmc.org/v2/purpur/%s/", serverVersion);
         this.main.getLogger().debug("Fetching Purpur link: {}", purpurAPI);
         try {

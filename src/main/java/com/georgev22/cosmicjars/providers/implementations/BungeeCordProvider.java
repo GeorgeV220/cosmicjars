@@ -4,6 +4,7 @@ import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.providers.info.BungeeCordInfo;
 import com.georgev22.cosmicjars.utilities.Utils;
 import com.google.gson.Gson;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class BungeeCordProvider extends Provider {
     }
 
     @Override
-    public String downloadJar(String serverType, String serverImplementation, String serverVersion) {
+    public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
         String API_BASE_URL = "https://ci.md-5.net/job/BungeeCord/api/json";
         this.main.getLogger().info("Fetching BungeeCord builds from {}", API_BASE_URL);
         try {
