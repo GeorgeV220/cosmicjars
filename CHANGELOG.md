@@ -1,3 +1,17 @@
+# [1.2.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.1.0...v1.2.0) (2024-07-08)
+
+
+### Bug Fixes
+
+* Rename centroJars.yml to cosmicJars.yml ([4636fb9](https://github.com/GeorgeV220/cosmicjars/commit/4636fb9ddb55b60d18a22ccf40178a69bd05453a))
+
+
+### Features
+
+* Add logging configuration and custom formatter ([701ec67](https://github.com/GeorgeV220/cosmicjars/commit/701ec673b41c0ffe2316782d0e911bbcfb8a868c))
+* **config:** Rename config file name to cosmicJars.yml ([51279c6](https://github.com/GeorgeV220/cosmicjars/commit/51279c60df7dc9aaf2a5cee64fbc791f6bbd59bc))
+* Update server configuration on config changes ([f04e535](https://github.com/GeorgeV220/cosmicjars/commit/f04e535c108ab544d6aa7b6811d9d6c2e2984bf6))
+
 # [1.1.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.0.0...v1.1.0) (2024-05-14)
 
 
