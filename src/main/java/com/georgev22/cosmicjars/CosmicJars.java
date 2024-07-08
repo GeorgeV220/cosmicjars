@@ -337,7 +337,11 @@ public class CosmicJars {
                 }
 
                 this.saveConfig();
-
+                this.reloadConfig();
+                this.serverType = this.getConfig().getString("server.type");
+                this.serverImplementation = this.getConfig().getString("server.implementation");
+                this.serverVersion = this.getConfig().getString("server.version");
+                this.logger.info("Config reloaded");
             }
             default -> this.logger.info("Unknown command: {}, type 'help' for help", String.join(" ", command));
         }
