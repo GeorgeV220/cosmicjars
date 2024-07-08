@@ -31,7 +31,7 @@ repositories {
 dependencies {
     // Mavens
     implementation 'org.apache.maven:maven-resolver-provider:3.9.6'
-    implementation 'org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18'
+    implementation 'org.apache.maven.resolver:maven-resolver-connector-basic:2.0.0'
     implementation 'org.apache.maven.resolver:maven-resolver-transport-http:1.9.21'
 
     compileOnly 'org.apache.commons:commons-compress:1.26.1'
