@@ -32,7 +32,7 @@ dependencies {
     // Mavens
     implementation 'org.apache.maven:maven-resolver-provider:3.9.6'
     implementation 'org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18'
-    implementation 'org.apache.maven.resolver:maven-resolver-transport-http:1.9.18'
+    implementation 'org.apache.maven.resolver:maven-resolver-transport-http:1.9.21'
 
     compileOnly 'org.apache.commons:commons-compress:1.26.1'
     compileOnly 'com.google.guava:guava:33.2.1-jre'
