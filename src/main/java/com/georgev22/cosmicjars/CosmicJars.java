@@ -97,7 +97,7 @@ public class CosmicJars {
                 """);
         logger.info("Made with love by George V. https://github.com/GeorgeV220");
 
-        configFile = new File(WORKING_DIRECTORY, "centroJars.yml");
+        configFile = new File(WORKING_DIRECTORY, "cosmicJars.yml");
         if (!configFile.exists()) {
             this.fileConfiguration = promptUserForServerDetails();
         } else {
@@ -267,7 +267,7 @@ public class CosmicJars {
         try {
             this.fileConfiguration.save(this.configFile);
         } catch (IOException e) {
-            this.logger.error("Error saving centroJars.yml: {}", e.getMessage());
+            this.logger.error("Error saving cosmicJars.yml: {}", e.getMessage());
         }
     }
 
