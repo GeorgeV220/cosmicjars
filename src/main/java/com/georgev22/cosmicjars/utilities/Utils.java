@@ -1,12 +1,10 @@
 package com.georgev22.cosmicjars.utilities;
 
 import com.georgev22.cosmicjars.CosmicJars;
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -87,6 +85,27 @@ public class Utils {
 
         CosmicJars.getInstance().getLogger().info("File downloaded successfully: {}", outputFile.getAbsolutePath());
         return outputFile.getAbsolutePath();
+    }
+
+    /**
+     * Copies the contents of the given InputStream to the specified file.
+     *
+     * @param inputStream The InputStream to read from.
+     * @param file        The file to write to.
+     * @return true if the operation is successful, false otherwise.
+     */
+    public static boolean copyInputStreamToFile(@NotNull InputStream inputStream, File file) {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            return true;
+        } catch (IOException e) {
+            CosmicJars.getInstance().getLogger().log(Level.ERROR, () -> String.format("Failed to copy input stream to file: %s Error: %s", file.getAbsolutePath(), e.getMessage()), e);
+            return false;
+        }
     }
 
     /**
