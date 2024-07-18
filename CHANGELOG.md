@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.2.0...v1.3.0) (2024-07-18)
+
+
+### Features
+
+* **providers:** Add PandaSpigotProvider implementation ([0a64618](https://github.com/GeorgeV220/cosmicjars/commit/0a646180884cb53436b61acf009be584a0139f72))
+* **utils:** Add method to copy InputStream to file ([bd559b8](https://github.com/GeorgeV220/cosmicjars/commit/bd559b88f96f7ee070f6980edbb89c611097f513))
+
 # [1.2.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.1.0...v1.2.0) (2024-07-08)
 
 
