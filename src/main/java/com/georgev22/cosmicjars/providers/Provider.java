@@ -114,6 +114,7 @@ public abstract class Provider {
             case "servers" -> switch (serverImplementation) {
                 case "purpur" -> new PurpurProvider(serverType, serverImplementation, serverVersion);
                 case "paper", "folia" -> new PaperProvider(serverType, serverImplementation, serverVersion);
+                case "pandaspigot" -> new PandaSpigotProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
             };
             case "modded" -> switch (serverImplementation) {
