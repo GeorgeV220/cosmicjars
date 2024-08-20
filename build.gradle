@@ -34,7 +34,7 @@ dependencies {
     implementation 'org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18'
     implementation 'org.apache.maven.resolver:maven-resolver-transport-http:1.9.21'
 
-    compileOnly 'org.apache.commons:commons-compress:1.26.1'
+    compileOnly 'org.apache.commons:commons-compress:1.27.1'
     compileOnly 'com.google.guava:guava:33.2.1-jre'
     compileOnly 'commons-lang:commons-lang:2.6'
     compileOnly 'com.google.code.gson:gson:2.10.1'
