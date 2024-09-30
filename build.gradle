@@ -38,7 +38,7 @@ dependencies {
     compileOnly 'com.google.guava:guava:33.2.1-jre'
     compileOnly 'commons-lang:commons-lang:2.6'
     compileOnly 'com.google.code.gson:gson:2.10.1'
-    compileOnly 'com.github.oshi:oshi-core:6.6.0'
+    compileOnly 'com.github.oshi:oshi-core:6.6.5'
     compileOnly 'org.jfree:jfreechart:1.5.4'
     compileOnly "com.georgev22.library:yaml:11.23.0"
     compileOnly 'com.formdev:flatlaf:3.4.1'
