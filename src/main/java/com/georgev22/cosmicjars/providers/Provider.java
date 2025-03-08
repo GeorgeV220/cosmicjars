@@ -110,19 +110,21 @@ public abstract class Provider {
      */
     public static @NotNull Provider getProvider(@NotNull String serverType, String serverImplementation, String serverVersion) {
         Provider provider;
-        return switch (serverType) {
-            case "servers" -> switch (serverImplementation) {
+        String implementationLower = serverImplementation.toLowerCase();
+
+        return switch (serverType.toLowerCase()) {
+            case "servers" -> switch (implementationLower) {
                 case "purpur" -> new PurpurProvider(serverType, serverImplementation, serverVersion);
                 case "paper", "folia" -> new PaperProvider(serverType, serverImplementation, serverVersion);
                 case "pandaspigot" -> new PandaSpigotProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
             };
-            case "modded" -> switch (serverImplementation) {
+            case "modded" -> switch (implementationLower) {
                 case "mohist", "banner" -> new MohistProvider(serverType, serverImplementation, serverVersion);
                 case "fabric" -> new FabricProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
             };
-            case "proxies" -> switch (serverImplementation) {
+            case "proxies" -> switch (implementationLower) {
                 case "velocity" -> new PaperProvider(serverType, serverImplementation, serverVersion);
                 case "bungeecord" -> new BungeeCordProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
