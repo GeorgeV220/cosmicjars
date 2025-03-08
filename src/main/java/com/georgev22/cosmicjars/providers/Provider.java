@@ -128,6 +128,13 @@ public abstract class Provider {
                 case "bungeecord" -> new BungeeCordProvider(serverType, serverImplementation, serverVersion);
                 default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
             };
+            case "mcjars" -> switch (implementationLower) {
+                case "vanilla", "paper", "pufferfish", "spigot", "folia", "purpur", "waterfall",
+                     "velocity", "fabric", "bungeecord", "quilt", "forge", "neoforge", "mohist",
+                     "arclight", "sponge", "leaves", "canvas", "aspaper", "legacy_fabric",
+                     "loohp_limbo", "nanolimbo" -> new MCJarsProvider(serverType, serverImplementation, serverVersion);
+                default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
+            };
             default -> new CentroJarProvider(serverType, serverImplementation, serverVersion);
         };
     }
