@@ -108,8 +108,7 @@ public abstract class Provider {
      * @param serverVersion        Version of the server.
      * @return The provider for the specified server type, implementation, and version.
      */
-    public static @NotNull Provider getProvider(@NotNull String serverType, String serverImplementation, String serverVersion) {
-        Provider provider;
+    public static @NotNull Provider getProvider(@NotNull String serverType, @NotNull String serverImplementation, String serverVersion) {
         String implementationLower = serverImplementation.toLowerCase();
 
         return switch (serverType.toLowerCase()) {
