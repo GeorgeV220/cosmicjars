@@ -1,3 +1,11 @@
+# [1.4.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.3.0...v1.4.0) (2025-03-08)
+
+
+### Features
+
+* Add MCJars provider implementation and info classes ([7861056](https://github.com/GeorgeV220/cosmicjars/commit/7861056dd8475218347e20c5e1cbc3ea8302d270))
+* normalize server implementation case in Provider.java ([0f51b2b](https://github.com/GeorgeV220/cosmicjars/commit/0f51b2bba3b965cf3120f5b502bc4feec7f7ea82))
+
 # [1.3.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.2.0...v1.3.0) (2024-07-18)
 
 

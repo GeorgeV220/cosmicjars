@@ -1,6 +1,6 @@
 # CosmicJars
 
-Version: 1.3.0
+Version: 1.4.0
 
 CosmicJars is a powerful tool crafted to simplify the management of your Minecraft server by seamlessly handling the
 download and update process of server jars. It ensures that your server software stays current with the latest versions
