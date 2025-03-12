@@ -48,7 +48,13 @@ public class CosmicJarsFrame extends JFrame {
         JMenu helpMenu = new JMenu("Help");
 
         JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.addActionListener(e -> System.exit(0));
+        exitItem.addActionListener(e -> {
+            MinecraftServer server = main.getMinecraftServer();
+            if (server != null && (server.getMinecraftServerProcess() != null && server.getMinecraftServerProcess().isAlive())) {
+                server.getMinecraftServerProcess().destroy();
+            }
+            System.exit(0);
+        });
         fileMenu.add(exitItem);
         JMenuItem configItem = new JMenuItem("Config");
         configItem.addActionListener(e -> ConfigPopup.showConfigPopup());
