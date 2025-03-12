@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
@@ -67,7 +69,10 @@ test {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.georgev22.cosmicjars.Main'
+                'Main-Class': 'com.georgev22.cosmicjars.Main',
+                "Version": project.version,
+                "Git-Repo": "https://github.com/GeorgeV220/cosmicjars",
+                "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
         )
     }
 }
