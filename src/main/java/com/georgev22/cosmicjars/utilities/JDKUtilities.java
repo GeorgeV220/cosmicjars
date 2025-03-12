@@ -2,6 +2,9 @@ package com.georgev22.cosmicjars.utilities;
 
 import com.georgev22.cosmicjars.CosmicJars;
 import com.georgev22.cosmicjars.helpers.Platform;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -9,14 +12,14 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -24,6 +27,53 @@ import java.util.zip.ZipFile;
 public class JDKUtilities {
 
     private final CosmicJars main = CosmicJars.getInstance();
+
+    /**
+     * Retrieves a list of available JDK versions from the Adoptium API.
+     *
+     * @return An array of available JDK versions.
+     */
+    public String[] getOnlineJDKVersions() {
+        List<String> versions = new ArrayList<>();
+        try {
+            URL url = new URL("https://api.adoptium.net/v3/info/available_releases");
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            if (conn.getResponseCode() == 200) {
+                Scanner scanner = new Scanner(conn.getInputStream());
+                StringBuilder response = new StringBuilder();
+                while (scanner.hasNext()) {
+                    response.append(scanner.nextLine());
+                }
+                scanner.close();
+
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                Set<Integer> uniqueVersions = new HashSet<>();
+
+                JsonArray availableLTSVersions = jsonObject.getAsJsonArray("available_lts_releases");
+                for (int i = 0; i < availableLTSVersions.size(); i++) {
+                    int ltsVersion = availableLTSVersions.get(i).getAsInt();
+                    versions.add(ltsVersion + " (LTS)");
+                    uniqueVersions.add(ltsVersion);
+                }
+
+                JsonArray availableVersions = jsonObject.getAsJsonArray("available_releases");
+                for (int i = 0; i < availableVersions.size(); i++) {
+                    int version = availableVersions.get(i).getAsInt();
+                    if (!uniqueVersions.contains(version)) {
+                        versions.add(String.valueOf(version));
+                    }
+                }
+            }
+            conn.disconnect();
+        } catch (IOException e) {
+            this.main.getLogger().log(Level.ERROR, () -> String.format("Failed to get JDK versions: %s", e.getMessage()), e);
+        }
+        return versions.toArray(new String[0]);
+    }
 
     /**
      * Retrieves the version of the Java runtime.
