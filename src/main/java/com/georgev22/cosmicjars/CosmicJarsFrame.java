@@ -1,9 +1,11 @@
 package com.georgev22.cosmicjars;
 
+import com.georgev22.cosmicjars.gui.ConfigPopup;
 import com.georgev22.cosmicjars.gui.HistoryTextField;
 import com.georgev22.cosmicjars.gui.SmartScroller;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.utilities.ConsoleOutputHandler;
+import com.georgev22.cosmicjars.utilities.Utils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jfree.chart.*;
@@ -40,6 +42,46 @@ public class CosmicJarsFrame extends JFrame {
         setTitle("CosmicJars");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1400, 600);
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        JMenu helpMenu = new JMenu("Help");
+
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> System.exit(0));
+        fileMenu.add(exitItem);
+        JMenuItem configItem = new JMenuItem("Config");
+        configItem.addActionListener(e -> ConfigPopup.showConfigPopup());
+        fileMenu.add(configItem);
+
+        JMenuItem aboutItem = new JMenuItem("About");
+
+        aboutItem.addActionListener(e -> {
+            String version = Utils.getManifestValue("Version");
+            String branch = Utils.getManifestValue("Git-Branch");
+            String commit = Utils.getManifestValue("Git-Hash");
+            String repoUrl = Utils.getManifestValue("Git-Repo");
+
+            String aboutMessage = String.format(
+                    """
+                            CosmicJars %s
+                            Developed by GeorgeV22
+                            
+                            Branch: %s
+                            Commit: %s
+                            GitHub: %s
+                            
+                            Special thanks to JetBrains for their amazing tools!""",
+                    version, branch, commit, repoUrl
+            );
+
+            JOptionPane.showMessageDialog(this, aboutMessage, "About", JOptionPane.INFORMATION_MESSAGE);
+        });
+        helpMenu.add(aboutItem);
+
+        menuBar.add(fileMenu);
+        menuBar.add(helpMenu);
+        setJMenuBar(menuBar);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
