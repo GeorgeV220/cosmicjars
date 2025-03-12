@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.4.0...v1.5.0) (2025-03-12)
+
+
+### Features
+
+* add ConfigPopup class for server configuration GUI ([239123e](https://github.com/GeorgeV220/cosmicjars/commit/239123e591eae45201962a9221fa7d2be87af5a1))
+* add menu bar with file and help options to CosmicJarsFrame ([2e9c7c6](https://github.com/GeorgeV220/cosmicjars/commit/2e9c7c6368011826b81fe9785d2300ed2fa5c9f2))
+* add method to retrieve JDK versions from Adoptium API ([c4d24f8](https://github.com/GeorgeV220/cosmicjars/commit/c4d24f8ae64f93be902924e58dc2eda126c99858))
+* add method to retrieve manifest attribute values ([81170b1](https://github.com/GeorgeV220/cosmicjars/commit/81170b13c93c777501af8b5a2996755791ef509b))
+* add server process cleanup before exit in CosmicJarsFrame ([75e93cb](https://github.com/GeorgeV220/cosmicjars/commit/75e93cb15d0bb04f6aaad1982b549538f7a098a8))
+* **build.gradle:** add version, git repo, and build timestamp to manifest ([349154b](https://github.com/GeorgeV220/cosmicjars/commit/349154babf687af493293ef0485805217793f498))
+
 # [1.4.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.3.0...v1.4.0) (2025-03-08)
 
 
