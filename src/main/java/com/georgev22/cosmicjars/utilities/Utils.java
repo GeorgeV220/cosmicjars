@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public class Utils {
 
@@ -115,6 +117,19 @@ public class Utils {
      */
     public static boolean isWindows() {
         return (System.getProperty("os") != null ? System.getProperty("os") : "").toLowerCase().contains("windows");
+    }
+
+    public static String getManifestValue(String attributeName) {
+        try (InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF")) {
+            if (inputStream != null) {
+                Manifest manifest = new Manifest(inputStream);
+                Attributes attributes = manifest.getMainAttributes();
+                return attributes.getValue(attributeName);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Unknown";
     }
 
 }
