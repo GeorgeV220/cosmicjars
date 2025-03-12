@@ -69,10 +69,8 @@ CosmicJars is grateful for the support of JetBrains. Their tools have been instr
 project, and we appreciate their ongoing support.
 
 ## Disclaimer
+CosmicJars leverages public REST APIs from CentroJars, Adoptium, and MCJars to provide comprehensive access to Minecraft server jar information. We are not affiliated with CentroJars, CentralNodes, Adoptium, or MCJars. Any references to these services are solely for the purpose of utilizing their APIs for efficient server jar management.
 
-CosmicJars utilizes the public REST API provided by CentroJars for accessing Minecraft server jar information. We are
-not affiliated with CentroJars or CentralNodes. Any references to CentroJars are solely for the purpose of utilizing
-their API for server jar management.
 
 ---
 
