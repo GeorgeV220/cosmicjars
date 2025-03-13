@@ -44,13 +44,14 @@ public class ConfigPopup {
                 return;
             }
 
-            instance.getConfig().set("server.type", selectedProvider);
-            instance.getConfig().set("server.implementation", selectedImplementation);
+            instance.getConfig().set("server.type", selectedProvider.toLowerCase());
+            instance.getConfig().set("server.implementation", selectedImplementation.toLowerCase());
             instance.getConfig().set("server.version", serverVersion);
             if (selectedJDK != null)
                 instance.getConfig().set("server.jdkVersion", selectedJDK.split(" ")[0]);
 
             instance.saveConfig();
+            instance.reloadConfig();
 
             instance.getLogger().info("Selected Provider: {}", selectedProvider);
             instance.getLogger().info("Selected Implementation: {}", selectedImplementation);
