@@ -1,6 +1,11 @@
 package com.georgev22.cosmicjars;
 
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubDarkIJTheme;
+import com.georgev22.cosmicjars.command.CommandManager;
+import com.georgev22.cosmicjars.command.commands.ConfigCommand;
+import com.georgev22.cosmicjars.command.commands.ExitCommand;
+import com.georgev22.cosmicjars.command.commands.HelpCommand;
+import com.georgev22.cosmicjars.command.commands.StartCommand;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.providers.*;
 import com.georgev22.cosmicjars.utilities.JDKUtilities;
@@ -8,6 +13,7 @@ import com.georgev22.library.yaml.file.FileConfiguration;
 import com.georgev22.library.yaml.file.YamlConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jline.reader.LineReader;
@@ -26,6 +32,7 @@ public class CosmicJars {
     private static CosmicJars instance;
 
     private final File WORKING_DIRECTORY = new File(".");
+    private final CommandManager commandManager;
     private FileConfiguration fileConfiguration;
     private final File configFile;
     private final Logger logger;
@@ -33,8 +40,6 @@ public class CosmicJars {
     private final String[] programArguments;
     private final JDKUtilities jdkUtilities;
     private MinecraftServer minecraftServer;
-
-    private String serverType, serverImplementation, serverVersion;
 
     /**
      * Gets the singleton instance of the CentersJars application.
@@ -104,6 +109,14 @@ public class CosmicJars {
             this.fileConfiguration = YamlConfiguration.loadConfiguration(this.configFile);
         }
 
+
+        // Commands
+        this.commandManager = new CommandManager();
+        this.commandManager.registerCommand(new StartCommand());
+        this.commandManager.registerCommand(new ConfigCommand());
+        this.commandManager.registerCommand(new ExitCommand());
+        this.commandManager.registerCommand(new HelpCommand());
+
         Optional<String> cosmicServerTypeArg = cosmicArgs.stream()
                 .filter(arg -> arg.startsWith("--cosmicServerType="))
                 .findFirst();
@@ -139,10 +152,6 @@ public class CosmicJars {
             logger.error("Failed to get server details.");
             return;
         }
-
-        this.serverType = serverType;
-        this.serverImplementation = serverImplementation;
-        this.serverVersion = serverVersion;
 
         String[] minecraftServerArguments = Arrays.stream(this.programArguments).filter(arg -> !arg.startsWith("--cosmic")).toArray(String[]::new);
         this.minecraftServer = new MinecraftServer(
@@ -251,6 +260,16 @@ public class CosmicJars {
     }
 
     /**
+     * Sets the MinecraftServer instance.
+     *
+     * @param minecraftServer The MinecraftServer instance.
+     */
+    @ApiStatus.Internal
+    public void setMinecraftServer(MinecraftServer minecraftServer) {
+        this.minecraftServer = minecraftServer;
+    }
+
+    /**
      * Returns the JDKUtilities instance.
      *
      * @return The JDKUtilities instance.
@@ -263,6 +282,10 @@ public class CosmicJars {
         return this.fileConfiguration;
     }
 
+    public CommandManager getCommandManager() {
+        return commandManager;
+    }
+
     public void saveConfig() {
         try {
             this.fileConfiguration.save(this.configFile);
@@ -273,77 +296,5 @@ public class CosmicJars {
 
     public void reloadConfig() {
         this.fileConfiguration = YamlConfiguration.loadConfiguration(this.configFile);
-    }
-
-    public void sendCommand(String[] command) {
-        this.logger.info("Received command: {}", String.join(" ", command));
-        switch (command[0]) {
-            case "exit" -> {
-                Runtime runtime = Runtime.getRuntime();
-                runtime.exit(0);
-            }
-            case "help" -> this.logger.info("Available commands: \nexit \nstart \nhelp \nconfig");
-            case "start" -> {
-                String[] startArguments = Arrays.copyOfRange(command, 1, command.length);
-                if (startArguments.length != 0) {
-                    if (startArguments[0].equalsIgnoreCase("help")) {
-                        this.logger.info("Available start arguments: <type> <implementation> <version>");
-                        return;
-                    }
-                }
-                if (startArguments.length < 3) {
-                    if (this.minecraftServer != null) {
-                        this.logger.info("Starting Minecraft server with the current settings.");
-                        this.minecraftServer.start();
-                    } else {
-                        this.logger.info("Starting Minecraft server with the following settings: server.type={}, server.implementation={}, server.version={}", serverType, serverImplementation, serverVersion);
-                        this.minecraftServer = new MinecraftServer(
-                                Provider.getProvider(serverType, serverImplementation, serverVersion),
-                                WORKING_DIRECTORY,
-                                jdkUtilities.getJavaExecutable(),
-                                programArguments
-                        );
-                        this.minecraftServer.start();
-                    }
-                } else {
-                    this.logger.info("Starting Minecraft server with the following settings: type={}, implementation={}, version={}", startArguments[0], startArguments[1], startArguments[2]);
-                    this.minecraftServer = new MinecraftServer(
-                            Provider.getProvider(startArguments[0], startArguments[1], startArguments[2]),
-                            WORKING_DIRECTORY,
-                            jdkUtilities.getJavaExecutable(),
-                            programArguments
-                    );
-                    this.minecraftServer.start();
-                }
-            }
-            case "config" -> {
-                String[] args = Arrays.copyOfRange(command, 1, command.length);
-                if (args.length <= 1) {
-                    this.logger.info("Available config arguments: type <type> | implementation <implementation> | version <version> | jdkVersion <jdkVersion>");
-                    return;
-                }
-                if (args[0].equalsIgnoreCase("type")) {
-                    this.getConfig().set("server.type", args[1]);
-                    this.logger.info("Server type set to {}", args[1]);
-                } else if (args[0].equalsIgnoreCase("implementation")) {
-                    this.getConfig().set("server.implementation", args[1]);
-                    this.logger.info("Server implementation set to {}", args[1]);
-                } else if (args[0].equalsIgnoreCase("version")) {
-                    this.getConfig().set("server.version", args[1]);
-                    this.logger.info("Server version set to {}", args[1]);
-                } else if (args[0].equalsIgnoreCase("jdkVersion")) {
-                    this.getConfig().set("server.jdkVersion", args[1]);
-                    this.logger.info("JDK version set to {}", args[1]);
-                }
-
-                this.saveConfig();
-                this.reloadConfig();
-                this.serverType = this.getConfig().getString("server.type");
-                this.serverImplementation = this.getConfig().getString("server.implementation");
-                this.serverVersion = this.getConfig().getString("server.version");
-                this.logger.info("Config reloaded");
-            }
-            default -> this.logger.info("Unknown command: {}, type 'help' for help", String.join(" ", command));
-        }
     }
 }

@@ -113,7 +113,9 @@ public class CosmicJarsFrame extends JFrame {
                 if (server != null && (server.getMinecraftServerProcess() != null && server.getMinecraftServerProcess().isAlive())) {
                     server.sendCommandToServer(command);
                 } else {
-                    main.sendCommand(command);
+                    main.getLogger().info("Received command: {}", String.join(" ", command));
+                    String[] args = Arrays.copyOfRange(command, 1, command.length);
+                    main.getCommandManager().executeCommand(command[0], args);
                 }
                 commandTextField.setText("");
             }
