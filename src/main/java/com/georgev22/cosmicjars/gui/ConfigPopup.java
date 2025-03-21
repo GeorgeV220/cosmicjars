@@ -20,17 +20,40 @@ public class ConfigPopup {
         JLabel providerLabel = new JLabel("Provider:");
         String[] providers = {"Servers", "Modded", "Proxies", "MCJars"};
         JComboBox<String> providerDropdown = new JComboBox<>(providers);
+        String configSelectedProvider = instance.getConfig().getString("server.type", "servers");
+        for (int i = 0; i < providers.length; i++) {
+            if (providers[i].equalsIgnoreCase(configSelectedProvider)) {
+                providerDropdown.setSelectedIndex(i);
+                break;
+            }
+        }
 
         JLabel implementationLabel = new JLabel("Server Implementation:");
         String[] implementations = {"Arclight", "AsPaper", "Banner", "BungeeCord", "Canvas", "Fabric", "Folia", "Forge",
                 "Leaves", "Legacy_Fabric", "Loohp_Limbo", "Mohist", "Nanolimbo", "NeoForge", "PandaSpigot", "Paper",
                 "Pufferfish", "Purpur", "Quilt", "Spigot", "Sponge", "Vanilla", "Velocity", "Waterfall"};
         JComboBox<String> implementationDropdown = new JComboBox<>(implementations);
+        String configSelectedImplementation = instance.getConfig().getString("server.type", "Arclight");
+        for (int i = 0; i < implementations.length; i++) {
+            if (implementations[i].equalsIgnoreCase(configSelectedImplementation)) {
+                implementationDropdown.setSelectedIndex(i);
+                break;
+            }
+        }
         JLabel versionLabel = new JLabel("Server Version:");
         JTextField versionField = new JTextField();
+        versionField.setText(instance.getConfig().getString("server.version", ""));
 
         JLabel jdkLabel = new JLabel("JDK Version:");
-        JComboBox<String> jdkDropdown = new JComboBox<>(instance.getJDKUtilities().getOnlineJDKVersions());
+        String[] jdkVersions = instance.getJDKUtilities().getOnlineJDKVersions();
+        JComboBox<String> jdkDropdown = new JComboBox<>(jdkVersions);
+        String configSelectedJDK = instance.getConfig().getString("server.jdkVersion", "");
+        for (int i = 0; i < jdkVersions.length; i++) {
+            if (jdkVersions[i].startsWith(configSelectedJDK)) {
+                jdkDropdown.setSelectedIndex(i);
+                break;
+            }
+        }
 
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
