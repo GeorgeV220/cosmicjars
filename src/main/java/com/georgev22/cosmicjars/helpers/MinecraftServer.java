@@ -212,4 +212,17 @@ public class MinecraftServer {
             this.main.getLogger().error("Minecraft server is not running");
         }
     }
+
+    /**
+     * Stops the Minecraft server.
+     */
+    public void stopServer() {
+        String stopCommand =
+                switch (this.provider.getServerImplementation()) {
+                    case "bungeecord", "velocity" -> "exit";
+                    default -> "stop";
+                };
+
+        this.sendCommandToServer(new String[]{stopCommand});
+    }
 }
