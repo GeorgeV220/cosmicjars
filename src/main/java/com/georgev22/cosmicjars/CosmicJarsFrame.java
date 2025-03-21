@@ -4,6 +4,7 @@ import com.georgev22.cosmicjars.gui.ConfigPopup;
 import com.georgev22.cosmicjars.gui.HistoryTextField;
 import com.georgev22.cosmicjars.gui.SmartScroller;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
+import com.georgev22.cosmicjars.providers.Provider;
 import com.georgev22.cosmicjars.utilities.ConsoleOutputHandler;
 import com.georgev22.cosmicjars.utilities.Utils;
 import org.jetbrains.annotations.Contract;
@@ -118,8 +119,28 @@ public class CosmicJarsFrame extends JFrame {
 
         startButton.addActionListener(e -> {
             if (main.getMinecraftServer() == null) {
-                main.getLogger().info("The Minecraft Server object is null!");
-                return;
+                main.getLogger().info(
+                        "MinecraftServer object is null, creating a new one!"
+                );
+                Provider provider = Provider.getProvider(
+                        main.getConfig().getString("server.type", "mcjars"),
+                        main.getConfig().getString("server.implementation", "Vanilla"),
+                        main.getConfig().getString("server.version", "1.21.4")
+                );
+                main.getLogger().info(
+                        "Creating Minecraft Server object with provider: {}, implementation: {}, version: {}",
+                        provider.getServerType(),
+                        provider.getServerImplementation(),
+                        provider.getServerVersion()
+                );
+                main.setMinecraftServer(
+                        new MinecraftServer(
+                                provider,
+                                main.getWorkDir(),
+                                main.getJDKUtilities().getJavaExecutable(),
+                                main.getMinecraftServerArguments()
+                        )
+                );
             }
             if (main.getMinecraftServer().getMinecraftServerProcess() != null && main.getMinecraftServer().getMinecraftServerProcess().isAlive()) {
                 main.getLogger().info("The Minecraft Server is already running!");

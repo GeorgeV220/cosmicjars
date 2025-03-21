@@ -38,6 +38,7 @@ public class CosmicJars {
     private final Logger logger;
     private final boolean gui;
     private final String[] programArguments;
+    private String[] minecraftServerArguments;
     private final JDKUtilities jdkUtilities;
     private MinecraftServer minecraftServer;
 
@@ -144,7 +145,7 @@ public class CosmicJars {
             return;
         }
 
-        String[] minecraftServerArguments = Arrays.stream(this.programArguments).filter(arg -> !arg.startsWith("--cosmic")).toArray(String[]::new);
+        minecraftServerArguments = Arrays.stream(this.programArguments).filter(arg -> !arg.startsWith("--cosmic")).toArray(String[]::new);
         this.minecraftServer = new MinecraftServer(
                 Provider.getProvider(serverType, serverImplementation, serverVersion),
                 WORKING_DIRECTORY,
@@ -230,6 +231,18 @@ public class CosmicJars {
      */
     public String[] getProgramArguments() {
         return programArguments;
+    }
+
+    /**
+     * Retrieves the arguments used to configure the Minecraft server.
+     * These arguments are typically passed to the server process during startup
+     * and can include various settings such as server properties,
+     * and other runtime configurations.
+     *
+     * @return An array of strings representing the arguments passed to the Minecraft server.
+     */
+    public String[] getMinecraftServerArguments() {
+        return minecraftServerArguments;
     }
 
     /**
