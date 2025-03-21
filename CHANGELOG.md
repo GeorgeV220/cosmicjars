@@ -1,3 +1,18 @@
+# [1.6.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.5.0...v1.6.0) (2025-03-21)
+
+
+### Bug Fixes
+
+* convert server type and implementation to lowercase in config ([1c5a298](https://github.com/GeorgeV220/cosmicjars/commit/1c5a2985494fe33ce504c2dfa6c146d110ca737a))
+
+
+### Features
+
+* add command manager and refactor command handling ([e3065e7](https://github.com/GeorgeV220/cosmicjars/commit/e3065e760fd5cd3f7d64c725ba573af045d07cf6))
+* **minecraft-server:** add stopServer method to handle server shutdown ([a57da82](https://github.com/GeorgeV220/cosmicjars/commit/a57da82be8e3c72dae9a406370ab6a90c1b7dded))
+* **ui:** add floating control panel with server management buttons ([7f26c28](https://github.com/GeorgeV220/cosmicjars/commit/7f26c2810aa8674b107d96bb9283d4a342c9a83b))
+* update CosmicJars startup banner to ASCII art ([478d80a](https://github.com/GeorgeV220/cosmicjars/commit/478d80a3829878cb8fa2c390604bbc06d39f9d82))
+
 # [1.5.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.4.0...v1.5.0) (2025-03-12)
 
 
