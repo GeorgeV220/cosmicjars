@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.6.0...v1.7.0) (2025-03-21)
+
+
+### Bug Fixes
+
+* initialize MinecraftServer when null and expose arguments ([c2d852e](https://github.com/GeorgeV220/cosmicjars/commit/c2d852e874da60f314e0cdaa8f7b3d0413e0450d))
+* update config key from 'server.type' to 'server.implementation' ([8fa94f3](https://github.com/GeorgeV220/cosmicjars/commit/8fa94f3711da9dc8ebccffffec06b7baaee96ea5))
+
+
+### Features
+
+* **gui:** initialize dropdowns with config values in ConfigPopup ([66cd8fc](https://github.com/GeorgeV220/cosmicjars/commit/66cd8fc39adc6b333edf52cf68f15a0b301e4144))
+* **ui:** Add macOS system properties for JMenuBar context menu ([02db9ca](https://github.com/GeorgeV220/cosmicjars/commit/02db9ca168e2905af4987c38d09473041d2d73f0))
+
 # [1.6.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.5.0...v1.6.0) (2025-03-21)
 
 
