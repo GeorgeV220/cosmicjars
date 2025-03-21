@@ -33,7 +33,7 @@ public class ConfigPopup {
                 "Leaves", "Legacy_Fabric", "Loohp_Limbo", "Mohist", "Nanolimbo", "NeoForge", "PandaSpigot", "Paper",
                 "Pufferfish", "Purpur", "Quilt", "Spigot", "Sponge", "Vanilla", "Velocity", "Waterfall"};
         JComboBox<String> implementationDropdown = new JComboBox<>(implementations);
-        String configSelectedImplementation = instance.getConfig().getString("server.type", "Arclight");
+        String configSelectedImplementation = instance.getConfig().getString("server.implementation", "Arclight");
         for (int i = 0; i < implementations.length; i++) {
             if (implementations[i].equalsIgnoreCase(configSelectedImplementation)) {
                 implementationDropdown.setSelectedIndex(i);
