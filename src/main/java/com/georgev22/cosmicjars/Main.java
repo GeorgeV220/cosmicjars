@@ -31,6 +31,9 @@ import java.util.logging.Logger;
 public class Main {
 
     public static void main(String[] args) {
+        // macOS JMenuBar to context menu
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "CosmicJars");
         try (InputStream stream = Main.class.getResourceAsStream("/logging.properties")) {
             if (stream == null) {
                 throw new RuntimeException("Cannot find logging.properties file");
