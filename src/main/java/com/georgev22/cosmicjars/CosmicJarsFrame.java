@@ -102,6 +102,78 @@ public class CosmicJarsFrame extends JFrame {
         new SmartScroller(consoleScrollPane);
         mainPanel.add(consolePanel, BorderLayout.CENTER);
 
+        JPanel floatingPanel = new JPanel();
+        floatingPanel.setLayout(null);
+        floatingPanel.setBorder(BorderFactory.createTitledBorder("Controls"));
+        floatingPanel.setBounds(50, 50, 270, 70);
+        //floatingPanel.setBackground(new Color(200, 200, 200, 200));
+
+        JButton startButton = new JButton("Start");
+        JButton stopButton = new JButton("Stop");
+        JButton restartButton = new JButton("Restart");
+
+        startButton.setBounds(10, 20, 80, 30);
+        stopButton.setBounds(95, 20, 80, 30);
+        restartButton.setBounds(180, 20, 80, 30);
+
+        startButton.addActionListener(e -> {
+            if (main.getMinecraftServer() == null) {
+                main.getLogger().info("The Minecraft Server object is null!");
+                return;
+            }
+            if (main.getMinecraftServer().getMinecraftServerProcess() != null && main.getMinecraftServer().getMinecraftServerProcess().isAlive()) {
+                main.getLogger().info("The Minecraft Server is already running!");
+                return;
+            }
+            main.getLogger().info("Starting the Minecraft server...");
+            main.getMinecraftServer().start();
+            stopButton.setEnabled(true);
+            startButton.setEnabled(false);
+        });
+
+        stopButton.addActionListener(e -> {
+            if (main.getMinecraftServer() == null) {
+                main.getLogger().info("The Minecraft Server object is null!");
+                return;
+            }
+            if (main.getMinecraftServer().getMinecraftServerProcess() == null || !main.getMinecraftServer().getMinecraftServerProcess().isAlive()) {
+                main.getLogger().warn("The Minecraft Server is not running!");
+                return;
+            }
+            main.getLogger().info("Stopping the Minecraft server...");
+            main.getMinecraftServer().stopServer();
+            main.getMinecraftServer().getMinecraftServerProcess().onExit()
+                    .thenRun(() -> stopButton.setEnabled(false));
+        });
+
+        restartButton.addActionListener(e -> {
+            if (main.getMinecraftServer() == null) {
+                main.getLogger().info("The Minecraft Server object is null!");
+                return;
+            }
+            main.getLogger().info("Restarting the Minecraft server...");
+            main.getMinecraftServer().stopServer();
+            main.getMinecraftServer().getMinecraftServerProcess()
+                    .onExit()
+                    .thenRun(() -> main.getMinecraftServer().start());
+        });
+
+        floatingPanel.add(startButton);
+        floatingPanel.add(stopButton);
+        floatingPanel.add(restartButton);
+
+        floatingPanel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int x = floatingPanel.getX() + e.getX() - floatingPanel.getWidth() / 2;
+                int y = floatingPanel.getY() + e.getY() - floatingPanel.getHeight() / 2;
+                floatingPanel.setLocation(x, y);
+            }
+        });
+
+// Add the floating panel on top of everything
+        getLayeredPane().add(floatingPanel, JLayeredPane.PALETTE_LAYER);
+
         JPanel commandPanel = new JPanel(new BorderLayout());
         commandTextField = new HistoryTextField();
         JButton sendButton = new JButton("Send");
