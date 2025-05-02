@@ -91,10 +91,14 @@ public class JDKUtilities {
      */
     public @NotNull String getJavaExecutable() {
         String jdkVersion = this.main.getConfig().getString("server.jdkVersion", "17");
-        File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), jdkVersion);
+        Platform.OS os = Platform.getCurrentOS();
+        String arch = getArchitecture();
+        String platformId = String.format("%s-%s-%s", jdkVersion, os.getOS(), arch);
+
+        File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), platformId);
         if (!jdkDir.exists()) {
-            this.main.getLogger().error("JDK version '{}' does not exist - Downloading it", jdkVersion);
-            jdkDir = this.downloadJDK(jdkVersion);
+            this.main.getLogger().error("JDK version '{}' for platform '{}' does not exist - Downloading it", jdkVersion, platformId);
+            jdkDir = this.downloadJDK(jdkVersion, os, arch);
         }
 
         File binDir;
@@ -114,22 +118,16 @@ public class JDKUtilities {
 
         if (!javaExe.exists()) {
             this.main.getLogger().error("We could not find your java executable inside '{}' - Using command 'java' instead", binDir.getAbsolutePath());
-
             return "java";
         }
 
-        if (Platform.getCurrentOS().equals(Platform.OS.LINUX)) {
-            Set<PosixFilePermission> permissions = new HashSet<>();
-            permissions.add(PosixFilePermission.OWNER_EXECUTE);
-            permissions.add(PosixFilePermission.GROUP_EXECUTE);
-            permissions.add(PosixFilePermission.OTHERS_EXECUTE);
-            permissions.add(PosixFilePermission.OWNER_WRITE);
-            permissions.add(PosixFilePermission.GROUP_WRITE);
-            permissions.add(PosixFilePermission.OTHERS_WRITE);
-            permissions.add(PosixFilePermission.OWNER_READ);
-            permissions.add(PosixFilePermission.GROUP_READ);
-            permissions.add(PosixFilePermission.OTHERS_READ);
+        if (os.equals(Platform.OS.LINUX)) {
             try {
+                Set<PosixFilePermission> permissions = EnumSet.of(
+                        PosixFilePermission.OWNER_EXECUTE, PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_EXECUTE,
+                        PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_WRITE, PosixFilePermission.OTHERS_WRITE,
+                        PosixFilePermission.OWNER_READ, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ
+                );
                 Files.setPosixFilePermissions(javaExe.toPath(), permissions);
             } catch (IOException e) {
                 this.main.getLogger().error("Failed to set permissions on java executable: {}", e.getMessage());
@@ -137,7 +135,6 @@ public class JDKUtilities {
         }
 
         this.main.getLogger().info("Java executable found: {}", javaExe.getAbsolutePath());
-
         return javaExe.getAbsolutePath();
     }
 
@@ -147,30 +144,29 @@ public class JDKUtilities {
      * @param version The version of the JDK to download
      * @return The path to the downloaded JDK
      */
-    public File downloadJDK(String version) {
-        Platform.OS currentOS = Platform.getCurrentOS();
+    public File downloadJDK(String version, Platform.@NotNull OS os, String arch) {
         String url = String.format(
                 "https://api.adoptopenjdk.net/v3/binary/latest/%s/ga/%s/%s/jdk/hotspot/normal/adoptopenjdk",
                 version,
-                currentOS.getOS(),
-                this.getArchitecture()
+                os.getOS(),
+                arch
         );
         String fileName = String.format(
-                currentOS.equals(Platform.OS.LINUX)
+                os.equals(Platform.OS.LINUX)
                         ? "jdk-%s-linux-%s.tar.gz"
                         : "jdk-%s-%s.zip",
-                currentOS.getOS(),
-                version
+                version,
+                arch
         );
-        File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), version);
+
+        String platformId = String.format("%s-%s-%s", version, os.getOS(), arch);
+        File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), platformId);
         String outputPath = jdkDir.getAbsolutePath() + "/";
 
         try {
-            Path directory = Paths.get(jdkDir.getAbsolutePath());
-            Files.createDirectories(directory);
-
+            Files.createDirectories(Paths.get(jdkDir.getAbsolutePath()));
             String downloadedFilePath = Utils.downloadFile(url, outputPath, fileName);
-            if (currentOS.equals(Platform.OS.WINDOWS)) {
+            if (os.equals(Platform.OS.WINDOWS)) {
                 extractFirstFolderFromZip(downloadedFilePath, outputPath);
             } else {
                 extractFirstFolderFromTarGz(downloadedFilePath, outputPath);
