@@ -53,8 +53,8 @@ public class PaperProvider extends Provider {
                 String fileName = serverVersion + ".jar";
 
                 String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/";
-                String localPurpurBuild = this.main.getConfig().getString("localBuild." + serverImplementation, "0");
-                if (!localPurpurBuild.equals(String.valueOf(paperInfo.getLatestBuild()))) {
+                String localPaperBuild = this.main.getConfig().getString("localBuild." + serverImplementation, "0");
+                if (!localPaperBuild.equals(String.valueOf(paperInfo.getLatestBuild()))) {
                     this.main.getConfig().set("localBuild." + serverImplementation, String.valueOf(paperInfo.getLatestBuild()));
                     this.main.saveConfig();
                 } else {
