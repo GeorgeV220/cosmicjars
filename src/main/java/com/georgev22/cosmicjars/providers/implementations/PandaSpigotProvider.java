@@ -1,22 +1,26 @@
 package com.georgev22.cosmicjars.providers.implementations;
 
 import com.georgev22.cosmicjars.providers.Provider;
+import com.georgev22.cosmicjars.providers.info.PandaSpigotInfo;
 import com.georgev22.cosmicjars.utilities.Utils;
+import com.google.gson.Gson;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
+/**
+ * Implementation of Provider for downloading PandaSpigot jars.
+ */
 public class PandaSpigotProvider extends Provider {
 
-    private static final String ZIP_URL = "https://nightly.link/hpfxd/PandaSpigot/workflows/build/master/Server%20JAR.zip";
+    private static final String META_URL = "https://downloads.hpfxd.com/v2/projects/pandaspigot/versions/1.8.8/builds/latest";
 
     /**
-     * Constructs a new Provider with the specified server type, implementation, and version.
+     * Constructs a new PandaSpigotProvider with the specified server type, implementation, and version.
      *
      * @param serverType           Type of the server.
      * @param serverImplementation Name of the server implementation.
@@ -36,42 +40,57 @@ public class PandaSpigotProvider extends Provider {
      */
     @Override
     public @Nullable String downloadJar(String serverType, String serverImplementation, String serverVersion) {
-        this.main.getLogger().debug("Downloading ZIP file from: {}", ZIP_URL);
-        File path = new File(this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/" + serverVersion + "/");
-        String fileName = serverVersion + ".jar";
+        this.main.getLogger().debug("Fetching PandaSpigot metadata: {}", META_URL);
 
         try {
-            URL url = new URL(ZIP_URL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(META_URL).openConnection();
             connection.setRequestMethod("GET");
 
             int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                this.main.getLogger().info("Download successful, extracting ZIP...");
-                try (ZipInputStream zis = new ZipInputStream(connection.getInputStream())) {
-                    ZipEntry zipEntry;
-                    while ((zipEntry = zis.getNextEntry()) != null) {
-                        if (zipEntry.getName().endsWith(".jar")) {
-                            if (!path.exists()) {
-                                if (path.mkdirs()) {
-                                    this.main.getLogger().info("Created directory: {}", path.getPath());
-                                }
-                            }
-                            File jarFile = new File(path, fileName);
-                            if (Utils.copyInputStreamToFile(zis, jarFile)) {
-                                this.main.getLogger().info("Extracted JAR file to: {}", jarFile.getPath());
-                                return jarFile.getPath();
-                            }
-                        }
-                        zis.closeEntry();
-                    }
-                }
-            } else {
-                this.main.getLogger().error("Failed to download ZIP file. Response code: {} reason: {}", responseCode, connection.getResponseMessage());
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                this.main.getLogger().error("Failed to fetch metadata. Code: {} reason: {}", responseCode, connection.getResponseMessage());
+                return null;
             }
+
+            Gson gson = new Gson();
+            PandaSpigotInfo meta = gson.fromJson(new InputStreamReader(connection.getInputStream()), PandaSpigotInfo.class);
+
+            int buildNumber = meta.getBuild();
+            String downloadUrl = String.format(
+                    "https://downloads.hpfxd.com/v2/projects/pandaspigot/versions/1.8.8/builds/%d/downloads/paperclip",
+                    buildNumber
+            );
+
+            String filePath = this.main.getCosmicJarsFolder() + serverType + "/" + serverImplementation + "/1.8.8/";
+            String fileName =  "1.8.8.jar";
+            String configKey = "localBuild." + serverImplementation;
+            String localBuild = this.main.getConfig().getString(configKey, "0");
+
+            File jarFile = new File(filePath + fileName);
+            if (localBuild.equals(String.valueOf(buildNumber)) && jarFile.exists()) {
+                this.main.getLogger().info("Skipping download. Existing JAR for build {} already exists at {}", buildNumber, jarFile.getPath());
+                return jarFile.getPath();
+            }
+
+            this.main.getLogger().info("New build detected ({}), downloading from {}", buildNumber, downloadUrl);
+
+            File pathDir = new File(filePath);
+            if (!pathDir.exists() && pathDir.mkdirs()) {
+                this.main.getLogger().info("Created directory: {}", pathDir.getPath());
+            }
+
+            Utils.downloadFile(downloadUrl, filePath, fileName);
+            this.main.getLogger().info("Downloaded JAR to: {}", jarFile.getPath());
+
+            this.main.getConfig().set(configKey, String.valueOf(buildNumber));
+            this.main.saveConfig();
+
+            return jarFile.getPath();
+
         } catch (IOException e) {
-            this.main.getLogger().error("Error downloading or extracting ZIP file: {}", e.getMessage());
+            this.main.getLogger().error("Error while fetching or downloading PandaSpigot: {}", e.getMessage());
         }
+
         return null;
     }
 }
