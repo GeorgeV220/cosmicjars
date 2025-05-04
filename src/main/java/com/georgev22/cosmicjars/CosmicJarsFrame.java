@@ -164,7 +164,11 @@ public class CosmicJarsFrame extends JFrame {
             main.getLogger().info("Stopping the Minecraft server...");
             main.getMinecraftServer().stopServer();
             main.getMinecraftServer().getMinecraftServerProcess().onExit()
-                    .thenRun(() -> stopButton.setEnabled(false));
+                    .thenRun(() -> {
+                        stopButton.setEnabled(false);
+                        startButton.setEnabled(true);
+                        main.getLogger().info("Minecraft Server has stopped");
+                    });
         });
 
         restartButton.addActionListener(e -> {
@@ -287,6 +291,30 @@ public class CosmicJarsFrame extends JFrame {
             systemFreeMemoryLabel.setText("Free Memory: " + sysInfo.getHardware().getMemory().getAvailable() / (1024 * 1024) + "MB");
         });
         timer.start();
+
+        // Clear datasets every minute to reduce memory usage
+        Timer timer2 = new Timer(1000, e -> {
+            int memoryDatasetSize = memoryDataset.getColumnCount();
+            int cpuDatasetSize = cpuDataset.getColumnCount();
+            int toKeep = 30;
+            if (memoryDatasetSize > toKeep) {
+                for (int i = 0; i < memoryDatasetSize - toKeep; i++) {
+                    memoryDataset.removeColumn(memoryDataset.getColumnKeys().toArray()[i].toString());
+                }
+            }
+            if (cpuDatasetSize > toKeep) {
+                for (int i = 0; i < cpuDatasetSize - toKeep; i++) {
+                    cpuDataset.removeColumn(cpuDataset.getColumnKeys().toArray()[i].toString());
+                }
+            }
+            /*memoryDataset.getColumnKeys().forEach(object -> {
+                CosmicJars.getInstance().getLogger().debug("Object: {}", object);
+                if (System.currentTimeMillis() - Long.parseLong(object.toString()) > 40000) {
+                    memoryDataset.removeColumn(object.toString());
+                }
+            });*/
+        });
+        timer2.start();
 
         infoPanel.add(new JLabel("OS: " + os.getVersionInfo().toString()));
         infoPanel.add(new JLabel("Java: " + System.getProperty("java.version")));
