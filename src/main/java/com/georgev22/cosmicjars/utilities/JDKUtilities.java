@@ -92,12 +92,12 @@ public class JDKUtilities {
     public @NotNull String getJavaExecutable() {
         String jdkVersion = this.main.getConfig().getString("server.jdkVersion", "17");
         Platform.OS os = Platform.getCurrentOS();
-        String arch = getArchitecture();
+        String arch = Platform.getCurrentArchitecture();
         String platformId = String.format("%s-%s-%s", jdkVersion, os.getOS(), arch);
 
         File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), platformId);
         if (!jdkDir.exists()) {
-            this.main.getLogger().error("JDK version '{}' for platform '{}' does not exist - Downloading it", jdkVersion, platformId);
+            this.main.getLogger().error("JDK version '{}' for platform '{}' and arch '{}' does not exist - Downloading it", jdkVersion, platformId, arch);
             jdkDir = this.downloadJDK(jdkVersion, os, arch);
         }
 
@@ -110,13 +110,13 @@ public class JDKUtilities {
             binDir = new File(jdkDir, "bin");
         }
 
-        File javaExe = new File(binDir, "java");
+        File java = new File(binDir, "java");
 
-        if (!javaExe.exists()) {
-            javaExe = new File(binDir, "java.exe");
+        if (!java.exists() && os.equals(Platform.OS.WINDOWS)) {
+            java = new File(binDir, "java.exe");
         }
 
-        if (!javaExe.exists()) {
+        if (!java.exists()) {
             this.main.getLogger().error("We could not find your java executable inside '{}' - Using command 'java' instead", binDir.getAbsolutePath());
             return "java";
         }
@@ -128,14 +128,14 @@ public class JDKUtilities {
                         PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_WRITE, PosixFilePermission.OTHERS_WRITE,
                         PosixFilePermission.OWNER_READ, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ
                 );
-                Files.setPosixFilePermissions(javaExe.toPath(), permissions);
+                Files.setPosixFilePermissions(java.toPath(), permissions);
             } catch (IOException e) {
                 this.main.getLogger().error("Failed to set permissions on java executable: {}", e.getMessage());
             }
         }
 
-        this.main.getLogger().info("Java executable found: {}", javaExe.getAbsolutePath());
-        return javaExe.getAbsolutePath();
+        this.main.getLogger().info("Java executable found: {}", java.getAbsolutePath());
+        return java.getAbsolutePath();
     }
 
     /**
@@ -261,15 +261,5 @@ public class JDKUtilities {
                 }
             }
         }
-    }
-
-    /**
-     * Returns the architecture name based on the current operating system.
-     *
-     * @return The architecture name
-     */
-    public String getArchitecture() {
-        String arch = System.getProperty("os.arch").toLowerCase();
-        return arch.contains("64") ? "x64" : "x32";
     }
 }
