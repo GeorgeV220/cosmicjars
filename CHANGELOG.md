@@ -1,3 +1,13 @@
+# [1.8.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.7.0...v1.8.0) (2025-05-05)
+
+
+### Features
+
+* improve server stop handling and memory management ([05ec19e](https://github.com/GeorgeV220/cosmicjars/commit/05ec19ee83691f0a627396b20b35efe577564378))
+* **JDKUtilities:** support multi-platform JDK management and improve handling ([d773804](https://github.com/GeorgeV220/cosmicjars/commit/d7738048225bc3822e6afb735e34c8f5e89e5403))
+* **platform:** Improve architecture detection ([#24](https://github.com/GeorgeV220/cosmicjars/issues/24)) ([9d36fef](https://github.com/GeorgeV220/cosmicjars/commit/9d36fef516451e662fbf6123243158a0196d926e))
+* **providers:** refactor PandaSpigotProvider to use metadata API and build tracking ([642206c](https://github.com/GeorgeV220/cosmicjars/commit/642206cd49fc23872c0762de0445482bc94917a8))
+
 # [1.7.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.6.0...v1.7.0) (2025-03-21)
 
 
