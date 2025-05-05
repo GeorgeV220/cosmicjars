@@ -1,0 +1,86 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-05-05T00:26:23+03:00",
+    "name": "CosmicJars",
+    "author": "contact@georgev22.com",
+    "description": "CosmicJars is a powerful tool crafted to simplify the management of your Minecraft server by seamlessly handling the download and update process of server jars. It ensures that your server software stays current with the latest versions and builds, supporting popular variants like Paper, Folia, Purpur, Mohist, and Banner.",
+    "features": [
+        "eula",
+        "java_version",
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Java 21": "ghcr.io\/pterodactyl\/yolks:java_21"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{\r\n  \"server.properties\": {\r\n    \"parser\": \"properties\",\r\n    \"find\": {\r\n      \"server-ip\": \"0.0.0.0\",\r\n      \"server-port\": \"{{server.build.default.port}}\",\r\n      \"query.port\": \"{{server.build.default.port}}\"\r\n    }\r\n  },\r\n  \"cosmicJars.yml\": {\r\n    \"parser\": \"yaml\",\r\n    \"find\": {\r\n      \"server.type\": \"{{server.build.env.SERVER_TYPE}}\",\r\n      \"server.implementation\": \"{{server.build.env.SERVER_IMPLEMENTATION}}\",\r\n      \"server.version\": \"{{server.build.env.MINECRAFT_VERSION}}\",\r\n      \"server.jdkVersion\": \"{{server.build.env.SERVER_JDK_VERSION}}\"\r\n    }\r\n  }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/ash\r\n# Cosmic Jars Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\n\r\nDOWNLOAD_URL=https:\/\/github.com\/GeorgeV220\/cosmicjars\/releases\/latest\/download\/cosmicjars.jar \r\n\r\ncd \/mnt\/server\r\n\r\necho -e \"Running curl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\"\r\n\r\nif [ -f ${SERVER_JARFILE} ]; then\r\n\tmv ${SERVER_JARFILE} ${SERVER_JARFILE}.old\r\nfi\r\n\r\ncurl -o ${SERVER_JARFILE} -L ${DOWNLOAD_URL}\r\n\r\nif [ ! -f server.properties ]; then\r\n    echo -e \"Downloading MC server.properties\"\r\n    curl -o server.properties -L https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/minecraft\/java\/server.properties\r\nfi\r\n\r\nif [ ! -f cosmicJars.yml ]; then\r\n    echo -e \"Downloading MC server.properties\"\r\n    curl -o cosmicJars.yml -L https:\/\/raw.githubusercontent.com\/GeorgeV220\/cosmicjars\/refs\/heads\/main\/src\/main\/resources\/cosmicJars.yml\r\nfi",
+            "container": "ghcr.io\/pterodactyl\/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Minecraft Version",
+            "description": "The version of minecraft to download.\r\n\r\nPlease input a valid version number \"latest\" Tag is not supported!",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "1.21.4",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Jar File",
+            "description": "The name of the server jarfile to run the server with.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|regex:\/^([\\w\\d._-]+)(\\.jar)$\/",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Type",
+            "description": "Available values: servers, proxies, modded, mcjars",
+            "env_variable": "SERVER_TYPE",
+            "default_value": "servers",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Implementation",
+            "description": "Available values:  Arclight, AsPaper, Banner, BungeeCord, Canvas, Fabric, Folia, Forge, Leaves, Legacy_Fabric, Loohp_Limbo, Mohist, Nanolimbo, NeoForge, PandaSpigot, Paper, Pufferfish, Purpur, Quilt, Spigot, Sponge, Vanilla, Velocity, Waterfall",
+            "env_variable": "SERVER_IMPLEMENTATION",
+            "default_value": "paper",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "JDK Version",
+            "description": "Supported Versions: https:\/\/api.adoptium.net\/v3\/info\/available_releases",
+            "env_variable": "SERVER_JDK_VERSION",
+            "default_value": "21",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        }
+    ]
+}

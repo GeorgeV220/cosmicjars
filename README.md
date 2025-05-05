@@ -20,6 +20,8 @@ and builds, supporting popular variants like Paper, Folia, Purpur, Mohist, and B
 
 ## Installation
 
+### **Standalone**:
+
 1. Download the latest release of CosmicJars from the [Releases page](https://github.com/GeorgeV220/CosmicJars/releases)
    on GitHub.
 2. Run CosmicJars as a server using the following command:
@@ -27,6 +29,12 @@ and builds, supporting popular variants like Paper, Folia, Purpur, Mohist, and B
    java -Xmx2G -jar cosmicjars.jar --nogui
    ```
    You can change the JVM arguments to your liking.
+
+### **Pterodactyl**:
+Egg made by: @billrocker32
+1. Import the `egg-cosmic-jars.json` to your pterodactyl eggs
+2. Create a server with the CosmicJars egg
+3. Profit.
 
 ## Building from Source
 
