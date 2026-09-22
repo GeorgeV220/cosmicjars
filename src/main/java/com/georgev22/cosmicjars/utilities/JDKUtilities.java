@@ -91,13 +91,40 @@ public class JDKUtilities {
      */
     public @NotNull String getJavaExecutable() {
         String jdkVersion = this.main.getConfig().getString("server.jdkVersion", "17");
+        boolean preferLocalJava = this.main.getConfig().getBoolean("server.preferLocalJava", false);
         Platform.OS os = Platform.getCurrentOS();
         String arch = Platform.getCurrentArchitecture();
         String platformId = String.format("%s-%s-%s", jdkVersion, os.getOS(), arch);
 
+        if (preferLocalJava) {
+            String localJavaHome = System.getProperty("java.home");
+            String localJavaExecutable = new File(new File(localJavaHome, "bin"),
+                    os.equals(Platform.OS.WINDOWS) ? "java.exe" : "java").getAbsolutePath();
+
+            try {
+                Process process = new ProcessBuilder(localJavaExecutable, "--version")
+                        .redirectErrorStream(true)
+                        .start();
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String versionLine = reader.readLine();
+                    if (versionLine != null && versionLine.contains(jdkVersion)) {
+                        this.main.getLogger().info("Using local Java installation at '{}' (version matches JDK {})",
+                                localJavaExecutable, jdkVersion);
+                        return localJavaExecutable;
+                    } else {
+                        this.main.getLogger().info("Local Java version does not match required JDK {} – continuing with managed JDK", jdkVersion);
+                    }
+                }
+            } catch (IOException e) {
+                this.main.getLogger().warn("Failed to check local Java version: {}", e.getMessage());
+            }
+        }
+
         File jdkDir = new File(new File(this.main.getWorkDir(), ".jdks"), platformId);
         if (!jdkDir.exists()) {
-            this.main.getLogger().error("JDK version '{}' for platform '{}' and arch '{}' does not exist - Downloading it", jdkVersion, platformId, arch);
+            this.main.getLogger().error("JDK version '{}' for platform '{}' and arch '{}' does not exist - Downloading it",
+                    jdkVersion, platformId, arch);
             jdkDir = this.downloadJDK(jdkVersion, os, arch);
         }
 
@@ -111,7 +138,6 @@ public class JDKUtilities {
         }
 
         File java = new File(binDir, "java");
-
         if (!java.exists() && os.equals(Platform.OS.WINDOWS)) {
             java = new File(binDir, "java.exe");
         }
