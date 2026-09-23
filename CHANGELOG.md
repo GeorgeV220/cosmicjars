@@ -1,3 +1,17 @@
+# [2.1.0](https://github.com/GeorgeV220/cosmicjars/compare/v2.0.0...v2.1.0) (2026-09-23)
+
+
+### Bug Fixes
+
+* publish shadow component with correct project metadata ([cc64d13](https://github.com/GeorgeV220/cosmicjars/commit/cc64d130d78b7fd10561e2007b5dd009f53d7cf4))
+
+
+### Features
+
+* add --cosmic-nostart flag to skip server startup ([a1b0386](https://github.com/GeorgeV220/cosmicjars/commit/a1b0386d7195103ad1632e572609adb9a06628d6))
+* add ANSI color support to console output ([38dd339](https://github.com/GeorgeV220/cosmicjars/commit/38dd3390bc32bccd19279cb2d5e7008580554d1e))
+* add Pterodactyl panel integration with remote server consoles ([e7e43ab](https://github.com/GeorgeV220/cosmicjars/commit/e7e43ab6dbef09aa33aee83c554c1ed4fe24bf48))
+
 # [2.0.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.8.0...v2.0.0) (2026-09-23)
 
 
