@@ -150,6 +150,7 @@ public class MinecraftServer {
             this.main.getLogger().info("Starting Minecraft server with command: {}", String.join(" ", command));
 
             ProcessBuilder pb = new ProcessBuilder(command);
+            pb.directory(this.workDir);
 
             if (CosmicJars.getInstance().isGUI()) {
                 minecraftServerProcess = pb.start();

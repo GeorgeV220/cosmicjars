@@ -145,10 +145,13 @@ public class CosmicJars {
             return;
         }
 
+        File SERVER_WORKING_DIRECTORY = new File(serverType + "/" + serverImplementation + "/" + serverVersion + "/");
+        SERVER_WORKING_DIRECTORY.mkdirs();
+
         minecraftServerArguments = Arrays.stream(this.programArguments).filter(arg -> !arg.startsWith("--cosmic")).toArray(String[]::new);
         this.minecraftServer = new MinecraftServer(
                 Provider.getProvider(serverType, serverImplementation, serverVersion),
-                WORKING_DIRECTORY,
+                SERVER_WORKING_DIRECTORY,
                 jdkUtilities.getJavaExecutable(),
                 minecraftServerArguments
         );

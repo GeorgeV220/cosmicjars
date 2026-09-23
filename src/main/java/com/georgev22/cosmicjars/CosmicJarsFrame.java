@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -133,10 +134,12 @@ public class CosmicJarsFrame extends JFrame {
                         provider.getServerImplementation(),
                         provider.getServerVersion()
                 );
+                File workDir = new File(provider.getServerType() + "/" + provider.getServerImplementation() + "/" + provider.getServerVersion() + "/");
+                workDir.mkdirs();
                 main.setMinecraftServer(
                         new MinecraftServer(
                                 provider,
-                                main.getWorkDir(),
+                                workDir,
                                 main.getJDKUtilities().getJavaExecutable(),
                                 main.getMinecraftServerArguments()
                         )

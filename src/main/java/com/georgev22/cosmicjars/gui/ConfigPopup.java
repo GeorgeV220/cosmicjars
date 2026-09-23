@@ -55,6 +55,11 @@ public class ConfigPopup {
             }
         }
 
+        JLabel preferLocalJavaLabel = new JLabel("Prefer Local Java:");
+        JCheckBox preferLocalJavaCheckbox = new JCheckBox();
+        boolean configPreferLocalJava = instance.getConfig().getBoolean("server.preferLocalJava", false);
+        preferLocalJavaCheckbox.setSelected(configPreferLocalJava);
+
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
             String selectedProvider = (String) providerDropdown.getSelectedItem();
@@ -72,6 +77,7 @@ public class ConfigPopup {
             instance.getConfig().set("server.version", serverVersion);
             if (selectedJDK != null)
                 instance.getConfig().set("server.jdkVersion", selectedJDK.split(" ")[0]);
+            instance.getConfig().set("server.preferLocalJava", preferLocalJavaCheckbox.isSelected());
 
             instance.saveConfig();
             instance.reloadConfig();
@@ -80,6 +86,7 @@ public class ConfigPopup {
             instance.getLogger().info("Selected Implementation: {}", selectedImplementation);
             instance.getLogger().info("Server Version: {}", serverVersion);
             instance.getLogger().info("JDK Version: {}", selectedJDK != null ? selectedJDK.split(" ")[0] : null);
+            instance.getLogger().info("Prefer Local Java: {}", preferLocalJavaCheckbox.isSelected());
 
             configDialog.dispose();
         });
@@ -110,6 +117,12 @@ public class ConfigPopup {
 
         gbc.gridx = 0;
         gbc.gridy = 4;
+        configDialog.add(preferLocalJavaLabel, gbc);
+        gbc.gridx = 1;
+        configDialog.add(preferLocalJavaCheckbox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         configDialog.add(saveButton, gbc);
 
