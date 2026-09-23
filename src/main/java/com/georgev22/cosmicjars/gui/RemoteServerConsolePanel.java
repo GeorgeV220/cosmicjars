@@ -5,6 +5,7 @@ import com.georgev22.cosmicjars.pterodactyl.PterodactylClient;
 import com.georgev22.cosmicjars.pterodactyl.PterodactylSession;
 import com.georgev22.cosmicjars.pterodactyl.PterodactylWebSocket;
 import com.georgev22.cosmicjars.pterodactyl.model.PterodactylServer;
+import com.georgev22.cosmicjars.utilities.AnsiConsoleDocument;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -24,11 +25,13 @@ public class RemoteServerConsolePanel extends JPanel {
     private final @NotNull JLabel statusLabel;
     private final @NotNull PterodactylClient client;
     private final @NotNull PterodactylWebSocket webSocket;
+    private final @NotNull AnsiConsoleDocument ansiDocument;
 
     public RemoteServerConsolePanel(@NotNull PterodactylServer server) {
         super(new BorderLayout());
         this.server = server;
         this.client = new PterodactylClient(PterodactylSession.getInstance());
+        this.ansiDocument = new AnsiConsoleDocument(Color.WHITE, Color.BLACK);
 
         JPanel top = new JPanel(new BorderLayout());
         statusLabel = new JLabel("Status: connecting…");
@@ -148,7 +151,7 @@ public class RemoteServerConsolePanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             StyledDocument doc = consoleTextPane.getStyledDocument();
             try {
-                doc.insertString(doc.getLength(), text, null);
+                ansiDocument.append(doc, text);
             } catch (BadLocationException e) {
                 CosmicJars.getInstance().getLogger().error("Error writing remote console: {}", e.getMessage());
             }
