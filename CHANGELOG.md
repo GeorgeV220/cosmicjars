@@ -1,3 +1,19 @@
+# [2.0.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.8.0...v2.0.0) (2026-09-23)
+
+
+### Features
+
+* add option to prefer local Java installation ([56638d1](https://github.com/GeorgeV220/cosmicjars/commit/56638d1dc6d05d531f3fd8db85d7d9f1045eb86b))
+* add prefer local Java setting and per-server work directories ([33653f5](https://github.com/GeorgeV220/cosmicjars/commit/33653f5d30b539de487e2a6d71de5ed93196a6f5))
+* add Pterodactyl egg config and update README installation guide [skip ci] ([0a2a162](https://github.com/GeorgeV220/cosmicjars/commit/0a2a162dbba02ce0794de6aeee7b9503fc8346f7))
+
+
+### BREAKING CHANGES
+
+* server files now live in per-server
+subdirectories instead of the previous shared working
+directory.
+
 # [1.8.0](https://github.com/GeorgeV220/cosmicjars/compare/v1.7.0...v1.8.0) (2025-05-05)
 
 
