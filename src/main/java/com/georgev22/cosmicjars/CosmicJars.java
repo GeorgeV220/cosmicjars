@@ -76,6 +76,7 @@ public class CosmicJars {
         this.programArguments = args;
         List<String> cosmicArgs = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmic")).toList();
         Optional<String> guiArg = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmicgui")).findFirst();
+        Optional<String> noStartArg = Arrays.stream(this.programArguments).filter(arg -> arg.startsWith("--cosmic-nostart")).findFirst();
         this.gui = guiArg.isPresent() && guiArg.get().equals("--cosmicgui");
         if (gui) {
             SwingUtilities.invokeLater(CosmicJarsFrame::new);
@@ -155,6 +156,9 @@ public class CosmicJars {
                 jdkUtilities.getJavaExecutable(),
                 minecraftServerArguments
         );
+
+        if (noStartArg.isPresent()) return;
+
         this.minecraftServer.start();
     }
 
