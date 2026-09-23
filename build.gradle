@@ -5,6 +5,8 @@ plugins {
     id "com.gradleup.shadow" version "9.6.1"
 }
 
+group project.property("group")
+version project.property("version")
 
 apply from: "$rootDir/gradle/publish.gradle"
 
@@ -19,9 +21,6 @@ try {
 } catch (FileNotFoundException ignored) {
     println("gradle-local.properties not found. Setting default values.")
 }
-
-group project.property("group")
-version project.property("version")
 
 repositories {
     mavenCentral()

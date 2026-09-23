@@ -31,7 +31,7 @@ tasks.jar {
 publishing {
     publications {
         shadow(MavenPublication) {
-            from components.java
+            from components.shadow
             artifactId = project.name.toLowerCase()
             groupId = project.group.toString().toLowerCase()
         }
