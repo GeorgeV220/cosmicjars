@@ -2,9 +2,14 @@ package com.georgev22.cosmicjars;
 
 import com.georgev22.cosmicjars.gui.ConfigPopup;
 import com.georgev22.cosmicjars.gui.HistoryTextField;
+import com.georgev22.cosmicjars.gui.PterodactylServersPanel;
+import com.georgev22.cosmicjars.gui.PterodactylSettingsPopup;
+import com.georgev22.cosmicjars.gui.RemoteServerConsolePanel;
 import com.georgev22.cosmicjars.gui.SmartScroller;
+import com.georgev22.cosmicjars.gui.UnlockSecretsPopup;
 import com.georgev22.cosmicjars.helpers.MinecraftServer;
 import com.georgev22.cosmicjars.providers.Provider;
+import com.georgev22.cosmicjars.pterodactyl.model.PterodactylServer;
 import com.georgev22.cosmicjars.utilities.ConsoleOutputHandler;
 import com.georgev22.cosmicjars.utilities.Utils;
 import org.jetbrains.annotations.Contract;
@@ -34,6 +39,8 @@ public class CosmicJarsFrame extends JFrame {
     private static CosmicJarsFrame instance;
     private final List<Long> processIds = new ArrayList<>();
     private final CosmicJars main = CosmicJars.getInstance();
+    private final JTabbedPane tabbedPane;
+    private final Map<String, RemoteServerConsolePanel> remoteTabs = new HashMap<>();
 
     public static CosmicJarsFrame getInstance() {
         return instance;
@@ -51,6 +58,7 @@ public class CosmicJarsFrame extends JFrame {
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> {
+            closeAllRemoteConsoles();
             MinecraftServer server = main.getMinecraftServer();
             if (server != null && (server.getMinecraftServerProcess() != null && server.getMinecraftServerProcess().isAlive())) {
                 server.getMinecraftServerProcess().destroy();
@@ -61,6 +69,13 @@ public class CosmicJarsFrame extends JFrame {
         JMenuItem configItem = new JMenuItem("Config");
         configItem.addActionListener(e -> ConfigPopup.showConfigPopup());
         fileMenu.add(configItem);
+        fileMenu.addSeparator();
+        JMenuItem pteroSettingsItem = new JMenuItem("Pterodactyl Settings…");
+        pteroSettingsItem.addActionListener(e -> PterodactylSettingsPopup.show(this));
+        fileMenu.add(pteroSettingsItem);
+        JMenuItem pteroUnlockItem = new JMenuItem("Unlock Pterodactyl…");
+        pteroUnlockItem.addActionListener(e -> UnlockSecretsPopup.showUnlockDialog(this));
+        fileMenu.add(pteroUnlockItem);
 
         JMenuItem aboutItem = new JMenuItem("About");
 
@@ -91,8 +106,9 @@ public class CosmicJarsFrame extends JFrame {
         menuBar.add(helpMenu);
         setJMenuBar(menuBar);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        tabbedPane = new JTabbedPane();
 
+        JPanel localTab = new JPanel(new BorderLayout());
         JPanel consolePanel = new JPanel(new BorderLayout());
         JTextPane consoleTextPane = new JTextPane();
         consoleTextPane.setEditable(false);
@@ -102,21 +118,16 @@ public class CosmicJarsFrame extends JFrame {
         JScrollPane consoleScrollPane = new JScrollPane(consoleTextPane);
         consolePanel.add(consoleScrollPane, BorderLayout.CENTER);
         new SmartScroller(consoleScrollPane);
-        mainPanel.add(consolePanel, BorderLayout.CENTER);
+        localTab.add(consolePanel, BorderLayout.CENTER);
 
-        JPanel floatingPanel = new JPanel();
-        floatingPanel.setLayout(null);
-        floatingPanel.setBorder(BorderFactory.createTitledBorder("Controls"));
-        floatingPanel.setBounds(50, 50, 270, 70);
-        //floatingPanel.setBackground(new Color(200, 200, 200, 200));
-
+        JPanel controlsBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlsBar.setBorder(BorderFactory.createTitledBorder("Controls"));
         JButton startButton = new JButton("Start");
         JButton stopButton = new JButton("Stop");
         JButton restartButton = new JButton("Restart");
-
-        startButton.setBounds(10, 20, 80, 30);
-        stopButton.setBounds(95, 20, 80, 30);
-        restartButton.setBounds(180, 20, 80, 30);
+        controlsBar.add(startButton);
+        controlsBar.add(stopButton);
+        controlsBar.add(restartButton);
 
         startButton.addActionListener(e -> {
             if (main.getMinecraftServer() == null) {
@@ -186,22 +197,6 @@ public class CosmicJarsFrame extends JFrame {
                     .thenRun(() -> main.getMinecraftServer().start());
         });
 
-        floatingPanel.add(startButton);
-        floatingPanel.add(stopButton);
-        floatingPanel.add(restartButton);
-
-        floatingPanel.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int x = floatingPanel.getX() + e.getX() - floatingPanel.getWidth() / 2;
-                int y = floatingPanel.getY() + e.getY() - floatingPanel.getHeight() / 2;
-                floatingPanel.setLocation(x, y);
-            }
-        });
-
-// Add the floating panel on top of everything
-        getLayeredPane().add(floatingPanel, JLayeredPane.PALETTE_LAYER);
-
         JPanel commandPanel = new JPanel(new BorderLayout());
         commandTextField = new HistoryTextField();
         JButton sendButton = new JButton("Send");
@@ -227,19 +222,36 @@ public class CosmicJarsFrame extends JFrame {
 
         commandPanel.add(commandTextField, BorderLayout.CENTER);
         commandPanel.add(sendButton, BorderLayout.EAST);
-        mainPanel.add(commandPanel, BorderLayout.SOUTH);
+
+        JPanel southLocal = new JPanel(new BorderLayout());
+        southLocal.add(controlsBar, BorderLayout.NORTH);
+        southLocal.add(commandPanel, BorderLayout.SOUTH);
+        localTab.add(southLocal, BorderLayout.SOUTH);
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanelTextArea = new JTextArea();
         infoPanelTextArea.setEditable(false);
         infoPanel.add(new JLabel("Info"));
-        mainPanel.add(infoPanel, BorderLayout.EAST);
+        localTab.add(infoPanel, BorderLayout.EAST);
 
-        getContentPane().add(mainPanel);
+        tabbedPane.addTab("Local", localTab);
+
+        PterodactylServersPanel serversPanel = new PterodactylServersPanel(this::openRemoteConsole);
+        tabbedPane.addTab("Pterodactyl", serversPanel);
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedComponent() == serversPanel) {
+                serversPanel.onShown();
+            }
+        });
+
+        getContentPane().add(tabbedPane);
 
         outputHandler = new ConsoleOutputHandler(consoleTextPane, main.getLogger());
-        Runtime.getRuntime().addShutdownHook(new Thread(outputHandler::stop));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            closeAllRemoteConsoles();
+            outputHandler.stop();
+        }));
         PrintStream consolePrintStream = new PrintStream(outputHandler);
         new Thread(outputHandler).start();
         System.setOut(consolePrintStream);
@@ -252,7 +264,7 @@ public class CosmicJarsFrame extends JFrame {
         SystemInfo sysInfo = new SystemInfo();
         OperatingSystem os = sysInfo.getOperatingSystem();
 
-        StandardChartTheme darkTheme = getStandardChartTheme(mainPanel);
+        StandardChartTheme darkTheme = getStandardChartTheme(localTab);
         ChartFactory.setChartTheme(darkTheme);
         DefaultCategoryDataset cpuDataset = new DefaultCategoryDataset();
         JFreeChart cpuChart = createChart("CPU Usage", "Time", "Usage (%)", cpuDataset);
@@ -310,12 +322,6 @@ public class CosmicJarsFrame extends JFrame {
                     cpuDataset.removeColumn(cpuDataset.getColumnKeys().toArray()[i].toString());
                 }
             }
-            /*memoryDataset.getColumnKeys().forEach(object -> {
-                CosmicJars.getInstance().getLogger().debug("Object: {}", object);
-                if (System.currentTimeMillis() - Long.parseLong(object.toString()) > 40000) {
-                    memoryDataset.removeColumn(object.toString());
-                }
-            });*/
         });
         timer2.start();
 
@@ -330,7 +336,57 @@ public class CosmicJarsFrame extends JFrame {
         infoPanel.add(cpuChartPanel);
         infoPanel.add(memoryUsageLabel);
         infoPanel.add(memoryChartPanel);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeAllRemoteConsoles();
+            }
+        });
+
         setVisible(true);
+    }
+
+    private void openRemoteConsole(@NotNull PterodactylServer server) {
+        RemoteServerConsolePanel existing = remoteTabs.get(server.getIdentifier());
+        if (existing != null) {
+            tabbedPane.setSelectedComponent(existing);
+            return;
+        }
+
+        RemoteServerConsolePanel panel = new RemoteServerConsolePanel(server);
+        remoteTabs.put(server.getIdentifier(), panel);
+
+        JPanel tabHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        tabHeader.setOpaque(false);
+        JLabel title = new JLabel(panel.getTabTitle());
+        JButton closeButton = new JButton("×");
+        closeButton.setMargin(new Insets(0, 4, 0, 4));
+        closeButton.setFocusable(false);
+        closeButton.addActionListener(e -> closeRemoteConsole(server.getIdentifier()));
+        tabHeader.add(title);
+        tabHeader.add(closeButton);
+
+        tabbedPane.addTab(panel.getTabTitle(), panel);
+        int index = tabbedPane.indexOfComponent(panel);
+        tabbedPane.setTabComponentAt(index, tabHeader);
+        tabbedPane.setSelectedComponent(panel);
+    }
+
+    private void closeRemoteConsole(@NotNull String identifier) {
+        RemoteServerConsolePanel panel = remoteTabs.remove(identifier);
+        if (panel != null) {
+            panel.disposePanel();
+            tabbedPane.remove(panel);
+        }
+    }
+
+    private void closeAllRemoteConsoles() {
+        for (RemoteServerConsolePanel panel : new ArrayList<>(remoteTabs.values())) {
+            panel.disposePanel();
+            tabbedPane.remove(panel);
+        }
+        remoteTabs.clear();
     }
 
     private static @NotNull StandardChartTheme getStandardChartTheme(@NotNull JPanel mainPanel) {
