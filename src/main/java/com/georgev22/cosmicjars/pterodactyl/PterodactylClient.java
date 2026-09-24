@@ -16,7 +16,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Pterodactyl Client API REST helper (panel client API shape used by modern panels).
@@ -32,23 +34,39 @@ public final class PterodactylClient {
     }
 
     public @NotNull List<PterodactylServer> listServers() throws IOException {
-        List<PterodactylServer> servers = new ArrayList<>();
+        Map<String, PterodactylServer> servers = new LinkedHashMap<>();
+        listServers(servers, false);
+
+        try {
+            listServers(servers, true);
+        } catch (IOException ignored) {
+        }
+
+        return new ArrayList<>(servers.values());
+    }
+
+    private void listServers(
+            @NotNull Map<String, PterodactylServer> servers,
+            boolean other
+    ) throws IOException {
         int page = 1;
-        long total = Long.MAX_VALUE;
 
-        while ((long) (page - 1) * PER_PAGE < total) {
+        while (true) {
             String url = session.getPanelUrl()
-                    + "/api/client/servers?page=" + page
+                    + "/api/client/servers"
+                    + "?page=" + page
                     + "&per_page=" + PER_PAGE
-                    + "&other=false";
-            JsonObject root = getJson(url);
-            JsonObject serversObj = root.has("servers") ? root.getAsJsonObject("servers") : null;
-            if (serversObj == null) {
-                throw new IOException("Unexpected list response: missing \"servers\" object");
-            }
+                    + "&other=" + other;
 
-            if (serversObj.has("total") && !serversObj.get("total").isJsonNull()) {
-                total = serversObj.get("total").getAsLong();
+            JsonObject root = getJson(url);
+            JsonObject serversObj = root.has("servers")
+                    ? root.getAsJsonObject("servers")
+                    : null;
+
+            if (serversObj == null) {
+                throw new IOException(
+                        "Unexpected list response: missing \"servers\" object"
+                );
             }
 
             JsonArray data = serversObj.getAsJsonArray("data");
@@ -72,16 +90,24 @@ public final class PterodactylClient {
                         ? server.get("status").getAsString()
                         : null;
                 boolean suspended = server.has("is_suspended") && server.get("is_suspended").getAsBoolean();
-                servers.add(new PterodactylServer(uuid, uuidShort, name, description, status, suspended));
+                servers.put(uuid, new PterodactylServer(uuid, uuidShort, name, description, status, suspended));
             }
 
-            int returned = data.size();
-            if (returned < PER_PAGE) {
+            long total = serversObj.has("total")
+                    && !serversObj.get("total").isJsonNull()
+                    ? serversObj.get("total").getAsLong()
+                    : -1;
+
+            if (data.size() < PER_PAGE) {
                 break;
             }
+
+            if (total >= 0 && (long) page * PER_PAGE >= total) {
+                break;
+            }
+
             page++;
         }
-        return servers;
     }
 
     public void sendPower(@NotNull String serverId, @NotNull String action) throws IOException {
