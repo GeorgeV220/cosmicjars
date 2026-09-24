@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/GeorgeV220/cosmicjars/compare/v2.1.0...v2.1.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* include both owned and other servers in Pterodactyl listServers ([f366d03](https://github.com/GeorgeV220/cosmicjars/commit/f366d039028c633fe0914e5f907a5359ec2727d2))
+
 # [2.1.0](https://github.com/GeorgeV220/cosmicjars/compare/v2.0.0...v2.1.0) (2026-09-23)
 
 
